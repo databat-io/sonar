@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  redis:
+    image: redis
+  migrate:
+    build:
+        dockerfile: Dockerfile.dev
+        context: .
+    command: python manage.py migrate
+    volumes:
+      - ./app:/usr/src/app
+    depends_on:
+      - redis
+  runserver:
+    build:
+        dockerfile: Dockerfile.dev
+        context: .
+    volumes:
+      - ./app:/usr/src/app
+    environment:
+      - DEBUG=True
+      - DEV_MODE=True
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - migrate

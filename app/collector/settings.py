@@ -31,6 +31,10 @@ ALLOWED_HOSTS = [
     '{}.resindevice.io'.format(os.getenv('RESIN_DEVICE_UUID')),
 ]
 
+if os.getenv('DEV_MODE'):
+    ALLOWED_HOSTS += ['localhost']
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -124,6 +128,8 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+DEV_MODE = os.getenv('DEV_MODE', False)
 
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ['application/json']
