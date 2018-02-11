@@ -7,7 +7,7 @@ WorkingDirectory=/usr/src/app
 ExecStart=/usr/local/bin/gunicorn --access-logfile - --bind 0.0.0.0:80 collector.wsgi:application
 RestartSec=5
 Restart=always
-Environment=PYTHONPATH=/usr/src/app
+Environment=PYTHONPATH=/usr/lib/python2.7/dist-packages:/usr/lib/python2.7/site-packages:/usr/src/app
 
 [Install]
 WantedBy=multi-user.target
