@@ -27,10 +27,8 @@ SECRET_KEY = 'c&1d9t^p_ssul^n=i9t+xr5bd&l2yx*q&v1i@rv!x9_j2zp&_l'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', False)
 
-ALLOWED_HOSTS = [
-    '{}.resindevice.io'.format(os.getenv('RESIN_DEVICE_UUID')),
-    os.getenv('ALLOWED_HOSTS')
-]
+# Bad security practice, but makes life easier for now
+ALLOWED_HOSTS = ['*']
 
 if os.getenv('DEV_MODE'):
     ALLOWED_HOSTS += ['localhost']
