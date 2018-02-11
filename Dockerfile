@@ -3,7 +3,6 @@ FROM resin/raspberrypi3-python
 RUN apt-get update && apt-get install -yq --no-install-recommends \
     bluez \
     bluez-firmware \
-    curl \
     dnsmasq \
     pwgen \
     python-numpy \
@@ -24,6 +23,20 @@ RUN pip install -r /requirements.txt --no-cache-dir
 # Fix for error with bluepy
 RUN cd /usr/local/lib/python2.7/site-packages/bluepy && \
     make
+
+# Install Redis
+ARG REDIS_VERSION=4.0.6
+RUN \
+    wget -q -O /tmp/redis.tgz http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz && \
+    tar xfz /tmp/redis.tgz -C /tmp && \
+    cd /tmp/redis-${REDIS_VERSION} && \
+    make && \
+    make install && \
+    cd && rm -rf /tmp/redis*
+COPY configs/redis.conf /etc
+
+COPY systemd/*.service /etc/systemd/system/
+RUN systemctl enable redis.service
 
 # Copy in actual code base
 COPY app /usr/src/app/

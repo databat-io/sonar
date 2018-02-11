@@ -1,8 +1,8 @@
 [Unit]
-Description=Prometheus Node Exporter
+Description=Redis
 
 [Service]
-ExecStart=/usr/local/bin/node_exporter
+ExecStart=/usr/local/bin/redis-server /etc/redis.conf
 RestartSec=5
 Restart=always
 

@@ -1,8 +1,8 @@
 Django==1.11.9
 bluepy==1.1.4
 celery==4.1.0
+django-chartit==0.2.9
 djangorestframework==3.7.7
-dot3k==2.0.1
 netifaces==0.10.6
-prometheus-client==0.1.0
 pytz==2017.3
+redis==2.10.6
