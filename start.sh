@@ -2,7 +2,6 @@
 
 # Make sure persistent path for db exist
 mkdir -p \
-    /data/redis \
     /data/collector
 
 SOFT_COUNTER=0
