@@ -1,0 +1,76 @@
+# base-image for python on any machine using a template variable,
+# see more about dockerfile templates here:http://docs.resin.io/pages/deployment/docker-templates
+FROM resin/%%RESIN_MACHINE_NAME%%-python
+
+RUN apt-get update && apt-get install -yq --no-install-recommends \
+    bluez \
+    bluez-firmware \
+    dnsmasq \
+    pwgen \
+    python-numpy \
+    python-smbus && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Set our working directory
+WORKDIR /usr/src/app
+
+# Upgrade pip
+RUN pip install --upgrade pip
+
+COPY ./requirements.txt /requirements.txt
+
+# pip install python deps from requirements.txt on the resin.io build server
+RUN pip install -r /requirements.txt --no-cache-dir
+
+# Fix for error with bluepy
+RUN cd /usr/local/lib/python2.7/site-packages/bluepy && \
+    make
+
+# Install Prometheus
+ARG PROM_VERSION=2.0.0
+RUN \
+    wget -q -O /tmp/prom.tgz https://github.com/prometheus/prometheus/releases/download/v${PROM_VERSION}/prometheus-${PROM_VERSION}.linux-armv7.tar.gz && \
+    tar xfz /tmp/prom.tgz -C /tmp && \
+    cp /tmp/prometheus*/prometheus /usr/local/bin && \
+    rm -rf /tmp/prometheus*
+COPY configs/prometheus.yml /etc
+
+# Prometheus Node Exporter
+ARG PROM_NODE_EXPORTER_VERSION=0.15.2
+RUN \
+    wget -q -O /tmp/prom_exporter.tgz https://github.com/prometheus/node_exporter/releases/download/v${PROM_NODE_EXPORTER_VERSION}/node_exporter-${PROM_NODE_EXPORTER_VERSION}.linux-armv7.tar.gz && \
+    tar xfz /tmp/prom_exporter.tgz -C /tmp && \
+    cp /tmp/node_exporter*/node_exporter /usr/local/bin && \
+    rm -rf /tmp/node_exporter*
+
+# Install Redis
+ARG REDIS_VERSION=4.0.6
+RUN \
+    wget -q -O /tmp/redis.tgz http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz && \
+    tar xfz /tmp/redis.tgz -C /tmp && \
+    cd /tmp/redis-${REDIS_VERSION} && \
+    make && \
+    make install && \
+    cd && rm -rf /tmp/redis*
+COPY configs/redis.conf /etc
+
+COPY systemd/*.service /etc/systemd/system/
+RUN \
+    systemctl enable prometheus.service && \
+    systemctl enable redis.service && \
+    systemctl enable node_exporter.service
+
+# Install Resin WiFi connect
+RUN curl https://api.github.com/repos/resin-io/resin-wifi-connect/releases/latest -s \
+    | grep -hoP 'browser_download_url": "\K.*%%RESIN_ARCH%%\.tar\.gz' \
+    | xargs -n1 curl -Ls \
+    | tar -xvz -C /usr/src/app/
+
+# Copy in actual code base
+COPY app /usr/src/app/
+COPY start.sh /
+
+# switch on systemd init system in container
+ENV INITSYSTEM on
+
+CMD /start.sh
