@@ -1,5 +1,6 @@
 [Unit]
 Description=Redis
+After=network.target
 
 [Service]
 ExecStart=/usr/local/bin/redis-server /etc/redis.conf

@@ -1,0 +1,12 @@
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+WorkingDirectory=/usr/src/app
+ExecStart=gunicorn --bind 0.0.0.0:80 collector.wsgi:application
+RestartSec=5
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

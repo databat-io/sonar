@@ -36,7 +36,8 @@ RUN \
 COPY configs/redis.conf /etc
 
 COPY systemd/*.service /etc/systemd/system/
-RUN systemctl enable redis.service
+RUN systemctl enable redis.service && \
+    systemctl enable gunicorn.service
 
 # Copy in actual code base
 COPY app /usr/src/app/
