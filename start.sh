@@ -69,6 +69,7 @@ if [ $FAILED -eq 1 ]; then
 fi
 
 python manage.py migrate
+python manage.py collectstatic --noinput
 
 /usr/local/bin/celery \
     -A collector \
