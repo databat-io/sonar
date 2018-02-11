@@ -3,7 +3,6 @@ FROM resin/raspberrypi3-python
 RUN apt-get update && apt-get install -yq --no-install-recommends \
     bluez \
     bluez-firmware \
-    curl \
     dnsmasq \
     pwgen \
     python-numpy \
