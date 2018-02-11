@@ -33,7 +33,7 @@ SECRET_KEY = 'c&1d9t^p_ssul^n=i9t+xr5bd&l2yx*q&v1i@rv!x9_j2zp&_l'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', False)
 
-DEV_MODE = strtobool(os.getenv('DEV_MODE', False))
+DEV_MODE = string_to_bool(os.getenv('DEV_MODE', False))
 RESIN = os.getenv('RESIN_DEVICE_UUID', False)
 
 
