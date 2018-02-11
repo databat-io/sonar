@@ -45,8 +45,7 @@ if os.getenv('ALLOWED_HOSTS', False):
 if DEV_MODE:
     ALLOWED_HOSTS += ['localhost']
 
-if RESIN:
-    ALLOWED_HOSTS += ['.resindevice.io']
+ALLOWED_HOSTS += ['.resindevice.io']
 
 
 # Application definition
