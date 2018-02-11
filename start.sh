@@ -5,6 +5,11 @@ mkdir -p \
     /data/redis \
     /data/collector
 
+# Run migrations first
+python manage.py migrate
+python manage.py collectstatic --noinput
+
+
 SOFT_COUNTER=0
 SOFT_COUNTER_LIMIT=3
 
@@ -68,8 +73,6 @@ if [ $FAILED -eq 1 ]; then
     fi
 fi
 
-python manage.py migrate
-python manage.py collectstatic --noinput
 
 /usr/local/bin/celery \
     -A collector \
