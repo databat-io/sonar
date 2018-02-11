@@ -5,4 +5,3 @@ django-chartit==0.2.9
 djangorestframework==3.7.7
 netifaces==0.10.6
 pytz==2017.3
-redis==2.10.6
