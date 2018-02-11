@@ -13,6 +13,12 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 from celery.schedules import crontab
+from distutils.util import strtobool
+
+
+def string_to_bool(string):
+    return bool(strtobool(str(string)))
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,13 +33,20 @@ SECRET_KEY = 'c&1d9t^p_ssul^n=i9t+xr5bd&l2yx*q&v1i@rv!x9_j2zp&_l'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', False)
 
-ALLOWED_HOSTS = [
-    '{}.resindevice.io'.format(os.getenv('RESIN_DEVICE_UUID')),
-    os.getenv('ALLOWED_HOSTS'),
-]
+DEV_MODE = strtobool(os.getenv('DEV_MODE', False))
+RESIN = os.getenv('RESIN_DEVICE_UUID', False)
 
-if os.getenv('DEV_MODE'):
+
+ALLOWED_HOSTS = []
+
+if os.getenv('ALLOWED_HOSTS', False):
+    ALLOWED_HOSTS += [os.getenv('ALLOWED_HOSTS')]
+
+if DEV_MODE:
     ALLOWED_HOSTS += ['localhost']
+
+if RESIN:
+    ALLOWED_HOSTS += ['.resindevice.io']
 
 
 # Application definition
@@ -86,7 +99,7 @@ WSGI_APPLICATION = 'collector.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-if os.getenv('RESIN_DEVICE_UUID', False):
+if not DEV_MODE:
     DATABASE_PATH = '/data/collector'
 else:
     DATABASE_PATH = BASE_DIR
@@ -163,7 +176,6 @@ CELERY_BEAT_SCHEDULE = {
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

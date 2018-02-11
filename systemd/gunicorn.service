@@ -3,11 +3,14 @@ Description=gunicorn daemon
 After=network.target
 
 [Service]
+PIDFile=/tmp/pid-gunicorn
 WorkingDirectory=/usr/src/app
-ExecStart=/usr/local/bin/gunicorn --access-logfile - --bind 0.0.0.0:80 --env DJANGO_SETTINGS_MODULE=collector.settings collector.wsgi:application
+ExecStart=/usr/local/bin/gunicorn --access-logfile - --bind 0.0.0.0:80 --pid /tmp/pid-gunicorn collector.wsgi:application
 RestartSec=5
 Restart=always
 Environment=PYTHONPATH=/usr/lib/python2.7/dist-packages:/usr/lib/python2.7/site-packages:/usr/src/app
+PrivateTmp=true
+Type=forking
 
 [Install]
 WantedBy=multi-user.target
