@@ -1,32 +1,5 @@
 #!/bin/bash
 
-# If there is no default gateway, assume that there is
-# no active connection and launch Resin WiFi connect
-if [ $(ip route | grep default | wc -l) -lt 1 ]; then
-    echo 'Starting Resin WiFi Connect...'
-
-    SSID="sonar$(pwgen -B -n1 4)"
-    SSID_PASSWORD=$(pwgen -B -n1 6)
-
-    export SSID="$SSID"
-    export SSID_PASSWORD="$SSID_PASSWORD"
-    export MODE=wifi
-    python3 /usr/src/app/display_init.py
-
-    export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
-    /usr/src/app/wifi-connect \
-        --clear=false \
-        --portal-passphrase="$SSID_PASSWORD"
-        --portal-ssid="$SSID"
-
-    unset SSID
-    unset SSID_PASSWORD
-    unset MODE
-fi
-
-# Display init screen on greeting.
-# python /usr/src/app/display_init.py
-
 # Make sure persistent path for db exist
 mkdir -p \
     /data/redis \
