@@ -21,6 +21,19 @@ The primary use case is to monitor foot traffic in retail environment and simila
 
 ## Installation
 
+### Resin
+
+The easiest way to run Sonar is through Resin. After creating an application in Resin, simply run:
+
+```
+$ git clone git@github.com:databat-io/sonar.git
+$ cd sonar
+$ git remote add resin ssmit@git.resin.io:ssmit/mysonarapp.git
+$ git push master resin
+```
+
+Once the build is done, the device will automatically pull down the image and start running.
+
 ### Raspbian
 
 In order to run Sonar, you need to have Docker installed.

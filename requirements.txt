@@ -3,6 +3,8 @@ bluepy==1.1.4
 celery==4.1.0
 django-chartit==0.2.9
 djangorestframework==3.7.7
+gunicorn==19.7.1
 netifaces==0.10.6
 pytz==2017.3
 redis==2.10.6
+whitenoise==3.3.1
