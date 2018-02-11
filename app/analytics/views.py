@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from chartit import DataPool, Chart
 
-from django.shortcuts import render
+from django.shortcuts import render, render_to_response
 from .models import BleReport
 
 
@@ -24,10 +25,44 @@ def day_view(request, year, month, day):
             report_type='H',
             period__startswith='{}-{}-{}'.format(year, month, day),
     ).order_by('period')
-    context = {
-        'hourly_reports': hourly_reports,
-    }
-    return render(request, 'analytics/day_view.html', context)
+
+    report_data = DataPool(
+           series=[
+               {'options': {
+                   'source': hourly_reports
+               },
+                   'terms': [
+                       'period',
+                       'count']}
+             ])
+
+    cht = Chart(
+        datasource=report_data,
+        series_options=[{
+            'options': {
+                'type': 'line',
+                'stacking': False
+            },
+            'terms': {
+                'period': ['count']
+                }
+            }],
+        chart_options={
+            'title': {
+                'text': 'Devices discovered on an hourly basis.'
+            },
+            'xAxis': {
+                'title': {
+                    'text': 'Hourly number'
+                }
+            }
+        }
+    )
+
+    return render_to_response(
+        'analytics/graph.html',
+        context={'chart': cht}
+    )
 
 
 def month_view(request, year, month):
@@ -35,7 +70,41 @@ def month_view(request, year, month):
             report_type='D',
             period__startswith='{}-{}'.format(year, month),
     ).order_by('period')
-    context = {
-        'daily_reports': daily_reports,
-    }
-    return render(request, 'analytics/month_view.html', context)
+
+    report_data = DataPool(
+           series=[
+               {'options': {
+                   'source': daily_reports
+               },
+                   'terms': [
+                       'period',
+                       'count']}
+             ])
+
+    cht = Chart(
+        datasource=report_data,
+        series_options=[{
+            'options': {
+                'type': 'line',
+                'stacking': False
+            },
+            'terms': {
+                'period': ['count']
+                }
+            }],
+        chart_options={
+            'title': {
+                'text': 'Devices discovered on an daily basis.'
+            },
+            'xAxis': {
+                'title': {
+                    'text': 'Daily number'
+                }
+            }
+        }
+    )
+
+    return render_to_response(
+        'analytics/graph.html',
+        context={'chart': cht}
+    )

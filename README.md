@@ -31,7 +31,26 @@ The easiest way to install Docker on Raspbian is by simply running:
 $ curl -sSL https://get.docker.com | sh
 ```
 
-More to come...
+You can then start the image by running:
+
+```
+$ docker run -d \
+   --name databat-sonar \
+   --restart unless-stopped \
+   --privileged \
+   -p 8000:8000 \
+   -v /databat:/data \
+   databat/sonar
+```
+
+
+### Building the docker image
+
+```
+$ git clone git@github.com:databat-io/sonar.git
+$ cd sonar
+$ ./bin/build_image.sh
+```
 
 
 ## Development

@@ -29,6 +29,7 @@ DEBUG = os.getenv('DEBUG', False)
 
 ALLOWED_HOSTS = [
     '{}.resindevice.io'.format(os.getenv('RESIN_DEVICE_UUID')),
+    os.getenv('ALLOWED_HOSTS')
 ]
 
 if os.getenv('DEV_MODE'):
@@ -39,6 +40,7 @@ if os.getenv('DEV_MODE'):
 
 INSTALLED_APPS = [
     'rest_framework',
+    'chartit',
     'analytics.apps.AnalyticsConfig',
     'ble.apps.BleConfig',
     'django.contrib.admin',

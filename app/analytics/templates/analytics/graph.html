@@ -1,0 +1,10 @@
+<head>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://code.highcharts.com/2.2/highcharts.js"></script>
+    {% load chartit %}
+    {{ chart|load_charts:"container" }}
+</head>
+<body>
+    <div id='container'> Chart will be rendered here </div>
+    <a href="/">Back</a>
+</body>
