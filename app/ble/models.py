@@ -31,7 +31,7 @@ class ScanRecord(models.Model):
         on_delete=models.CASCADE,
         editable=False,
     )
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(db_index=True, auto_now_add=True)
     rssi = models.IntegerField()
 
     def __str__(self):

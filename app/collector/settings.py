@@ -38,6 +38,7 @@ if os.getenv('DEV_MODE'):
 # Application definition
 
 INSTALLED_APPS = [
+    'rest_framework',
     'analytics.apps.AnalyticsConfig',
     'ble.apps.BleConfig',
     'django.contrib.admin',
@@ -143,8 +144,16 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': 60.0,
     },
     'generate-hourly-report': {
-        'task': 'analytics.tasks.generate_hourly_report',
+        'task': 'analytics.tasks.ble_generate_hourly_report',
         'schedule': crontab(minute=10),
+    },
+    'generate-daily-report': {
+        'task': 'analytics.tasks.ble_generate_daily_report',
+        'schedule': crontab(minute=5, hour=0),
+    },
+    'generate-monthly-report': {
+        'task': 'analytics.tasks.ble_generate_monthly_report',
+        'schedule': crontab(minute=1, hour=3, day_of_month=1),
     },
 }
 

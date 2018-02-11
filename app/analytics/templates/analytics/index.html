@@ -1,0 +1,16 @@
+{% load analytics_extras %}
+<h3>Monthly reports</h3>
+<select onchange="location = this.options[this.selectedIndex].value;">
+    <option>Please select</option>
+    {% for report in monthly_reports %}
+    <option value="{{ report.period|convert_to_url }}/">{{ report.period }}</option>
+    {% endfor %}
+</select>
+
+<h3>Daily reports</h3>
+<select onchange="location = this.options[this.selectedIndex].value;">
+    <option>Please select</option>
+    {% for report in daily_reports %}
+    <option value="{{ report.period|convert_to_url }}/" }}/">{{ report.period }}</option>
+    {% endfor %}
+</select>

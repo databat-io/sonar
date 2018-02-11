@@ -19,6 +19,21 @@ The primary use case is to monitor foot traffic in retail environment and simila
  * Raspbian w/ Docker installed or Resin
 
 
+## Installation
+
+### Raspbian
+
+In order to run Sonar, you need to have Docker installed.
+
+The easiest way to install Docker on Raspbian is by simply running:
+
+```
+$ curl -sSL https://get.docker.com | sh
+```
+
+More to come...
+
+
 ## Development
 
 It's possible to run the application in dev mode (without data collection). To do this, you need `docker` and `docker-compose`. With this installed, you can run:
@@ -54,3 +69,10 @@ Once you have the files available locally, you can use the following command to 
 ```
 $ python manage.py loaddata datadump.json
 ```
+
+
+## FAQ
+
+### Why Django 1.11 and not Django 2?
+
+Good question. I started out with Django 2, but due to the fact that some of the required Bluetooth libraries failed to build with Python 3.

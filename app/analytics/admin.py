@@ -1,28 +1,33 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.contrib import admin
-from .models import Report
+from .models import BleReport
 
 
-class ReportAdmin(admin.ModelAdmin):
-    model = Report
+class BleReportAdmin(admin.ModelAdmin):
+    model = BleReport
 
     list_display = [
         'count',
-        'range_start',
-        'range_end',
+        'period',
         'report_type',
         'timestamp',
     ]
 
+    list_filter = (
+        'report_type',
+    )
+
     ordering = (
-        'timestamp',
+        'period',
     )
+
     readonly_fields = (
-        'range_end',
-        'range_start',
+        'period',
         'timestamp',
+        'timezone',
+        'count'
     )
 
 
-admin.site.register(Report, ReportAdmin)
+admin.site.register(BleReport, BleReportAdmin)

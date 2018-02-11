@@ -95,16 +95,6 @@ if [ $FAILED -eq 1 ]; then
     fi
 fi
 
-# Patch up the Prometheus file
-if ! grep -Fxq "$PROM_AUTH" /etc/prometheus.yml; then
-    echo -e "remote_write:\n  - url: $PROM_URL\n    basic_auth:\n      password: $PROM_AUTH" | tee -a /etc/prometheus.yml > /dev/null
-fi
-sed -i \
-    -e "s/HOSTNAME/$HOSTNAME/g" \
-    -e "s/DEVICE_NAME/$RESIN_DEVICE_NAME_AT_INIT/" \
-    /etc/prometheus.yml
-systemctl restart prometheus.service
-
 python manage.py migrate
 
 /usr/local/bin/celery \

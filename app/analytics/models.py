@@ -10,12 +10,16 @@ REPORT_TYPE = (
 )
 
 
-class Report(models.Model):
+class BleReport(models.Model):
     report_type = models.CharField(
         max_length=1,
         choices=REPORT_TYPE,
+        editable=False,
     )
-    range_start = models.DateTimeField()
-    range_end = models.DateTimeField()
-    count = models.PositiveIntegerField()
+    timezone = models.CharField(max_length=60, editable=False)
+    period = models.CharField(max_length=60, primary_key=True)
+    count = models.PositiveIntegerField(editable=False)
     timestamp = models.DateTimeField(auto_now_add=True, editable=False)
+
+    def __str__(self):
+        return self.period
