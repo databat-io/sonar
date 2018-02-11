@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 WorkingDirectory=/usr/src/app
-ExecStart=gunicorn --bind 0.0.0.0:80 collector.wsgi:application
+ExecStart=/usr/local/bin/gunicorn --bind 0.0.0.0:80 collector.wsgi:application
 RestartSec=5
 Restart=always
 
