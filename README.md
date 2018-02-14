@@ -6,7 +6,7 @@
 
 The goal for this tool is two-fold:
 
- * Scan the surrounding for BLE devices
+ * Scan the surroundings for BLE devices
  * Produce user friendly reports for said data
 
 ## Use case
