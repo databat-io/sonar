@@ -10,6 +10,9 @@ services:
     command: python manage.py migrate
     volumes:
       - ./app:/usr/src/app
+    environment:
+      - DEBUG=True
+      - DEV_MODE=True
     depends_on:
       - redis
   runserver:
