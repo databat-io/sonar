@@ -1,16 +1,80 @@
-{% load analytics_extras %}
-<h3>Monthly reports</h3>
-<select onchange="location = this.options[this.selectedIndex].value;">
-    <option>Please select</option>
-    {% for report in monthly_reports %}
-    <option value="{{ report.period|convert_to_url }}/">{{ report.period }}</option>
-    {% endfor %}
-</select>
+{% extends "analytics/base.html" %}
 
-<h3>Daily reports</h3>
-<select onchange="location = this.options[this.selectedIndex].value;">
-    <option>Please select</option>
-    {% for report in daily_reports %}
-    <option value="{{ report.period|convert_to_url }}/" }}/">{{ report.period }}</option>
-    {% endfor %}
-</select>
+{% load analytics_extras %}
+
+{% block page_title %}
+Getting started
+{% endblock page_title %}
+
+{% block content_class %}cards-page{% endblock content_class %}
+
+{% block body %}
+
+<div class="title-block">
+    <h3 class="title"> Reports </h3>
+    <p class="title-description"> Report type selection </p>
+</div>
+
+<section class="section">
+    <div class="row sameheight-container">
+        <div class="col-xl-6">
+            <div class="card card-default">
+                
+                <div class="card-header">
+                    <div class="header-block">
+                        <p class="title"> Monthly reports </p>
+                    </div>
+                </div>
+                <div class="card-block">
+
+                    <form role="form">
+                        <div class="form-group">
+                            <select class="form-control" onchange="location = this.options[this.selectedIndex].value;">
+                                <option>Please select</option>
+                                {% for report in monthly_reports %}
+                                <option value="{{ report.period|convert_to_url }}/">{{ report.period }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+
+
+                </div>
+                <div class="card-footer"></div>
+                
+            </div>
+            <!-- /.card -->
+        </div>
+        <!-- /.col-xl-6 -->
+        <div class="col-xl-6">
+            <div class="card card-default">
+                
+                <div class="card-header">
+                    <div class="header-block">
+                        <p class="title"> Daily reports </p>
+                    </div>
+                </div>
+                <div class="card-block">
+
+                    <form role="form">
+                        <div class="form-group">
+                            <select class="form-control" onchange="location = this.options[this.selectedIndex].value;">
+                                <option>Please select</option>
+                                {% for report in daily_reports %}
+                                <option value="{{ report.period|convert_to_url }}/">{{ report.period }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="card-footer"></div>
+                
+            </div>
+            <!-- /.card -->
+        </div>
+        <!-- /.col-xl-6 -->
+    </div>
+</section>
+
+{% endblock body %}

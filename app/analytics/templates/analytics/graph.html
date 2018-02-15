@@ -1,10 +1,44 @@
-<head>
+{% extends "analytics/base.html" %}
+
+<!-- TODO Add kwarg params to page title -->
+{% block page_title %}
+Chart for {{ year }}-{{ month }}{% if day %}-{{ day }}{% endif %}
+{% endblock page_title %}
+
+{% block page_specific_scripts %}
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <script src="https://code.highcharts.com/2.2/highcharts.js"></script>
     {% load chartit %}
     {{ chart|load_charts:"container" }}
-</head>
-<body>
-    <div id='container'> Chart will be rendered here </div>
-    <a href="/">Back</a>
-</body>
+{% endblock page_specific_scripts %}
+
+{% block content_class %}charts-morris-page{% endblock content_class %}
+
+{% block body %}
+<div class="row title-block">
+    <div class="col-sm-12 col-md-8">
+        <h3 class="title"> Reports <small>{{ page_title }}</small> </h3>
+        <p class="title-description"> Chart for {{ year }}-{{ month }}{% if day %}-{{ day }}{% endif %}</p>
+    </div>
+    <div class="col-sm-12 col-md-4">
+        <a type="button" href="/" class="btn btn-secondary pull-right"><i class="fa fa-arrow-left"></i> Go back</a>
+    </div>
+</div>
+
+<section class="section">
+    <div class="row sameheight-container">
+        <div class="col-xl-12">
+            <div class="card card-default">
+
+                <div class="card-block">
+                    <div id='container'> Chart will be rendered here </div>
+                </div>
+
+            </div>
+            <!-- /.card -->
+        </div>
+        <!-- /.col-xl-6 -->
+    </div>
+</section>
+
+{% endblock body %}

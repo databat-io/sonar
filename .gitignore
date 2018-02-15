@@ -2,3 +2,7 @@
 app/datadump*
 app/db.sqlite3
 venv
+.idea/
+
+app/staticfiles/*
+!app/staticfiles/README.md

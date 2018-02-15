@@ -1,0 +1,1 @@
+Placeholder file to ensure staticfiles is passed to Git.

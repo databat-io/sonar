@@ -43,7 +43,7 @@ if os.getenv('ALLOWED_HOSTS', False):
     ALLOWED_HOSTS += [os.getenv('ALLOWED_HOSTS')]
 
 if DEV_MODE:
-    ALLOWED_HOSTS += ['localhost']
+    ALLOWED_HOSTS += ['*']
 
 ALLOWED_HOSTS += ['.resindevice.io']
 
@@ -64,8 +64,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -86,6 +86,7 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.static',
                 'django.contrib.messages.context_processors.messages',
             ],
         },
@@ -102,7 +103,7 @@ if not DEV_MODE:
     DATABASE_PATH = '/data/collector'
 else:
     DATABASE_PATH = BASE_DIR
-
+    
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
