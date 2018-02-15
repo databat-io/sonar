@@ -52,7 +52,7 @@ def day_view(request, year, month, day):
             },
             'terms': {
                 'period': ['count']
-                }
+                },
             }],
         chart_options={
             'title': {
@@ -67,9 +67,15 @@ def day_view(request, year, month, day):
             },
             'yAxis': {
                 'min': 0
-            }
-        }
+            },
+            'plotOptions': {
+                'series': {
+                    'pointIntervalUnit': 'day'
+                }
+            },
+        },
     )
+
 
     return render_to_response(
         'analytics/graph.html',
