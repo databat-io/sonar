@@ -2943,3 +2943,9 @@ span a {
   @media (max-width: 767.98px) {
     .header .header-block-nav .profile-dropdown-menu {
       margin-top: 8px; } }
+.brand a:not(.btn), .link-unstyled:visited, .link-unstyled:hover, .link-unstyled:active,
+.link-unstyled:focus, .link-unstyled:active:hover {
+    color: inherit;
+    font-size: inherit;
+    text-decoration: none !important;
+  }
