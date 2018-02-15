@@ -20,9 +20,6 @@ def index(request):
     }
     return render(request, 'analytics/index.html', context)
 
-def day_string(datetime_value):
-    print(str(datetime.strptime(datetime_value, '%H:%M %p')))
-    return datetime.strptime(datetime_value, '%H:%M %p')
 
 def day_view(request, year, month, day):
     page_title = "Day view"
@@ -61,9 +58,6 @@ def day_view(request, year, month, day):
             'title': {
                 'text': 'Devices discovered on an hourly basis.'
             },
-            'time': {
-                'timezone': 'Europe/London'
-            },
             'credits': False,
             'xAxis': {
                 'title': {
@@ -76,12 +70,10 @@ def day_view(request, year, month, day):
             },
             'plotOptions': {
                 'series': {
-                    # 'pointStart': '2018-01-18 00:00',
                     'pointIntervalUnit': 'day'
                 }
             },
         },
-        # x_sortf_mapf_mts=(None, day_string, False)
     )
 
 
