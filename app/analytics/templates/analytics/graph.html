@@ -1,10 +1,48 @@
-<head>
+{% extends "analytics/base.html" %}
+
+<!-- TODO Add kwarg params to page title -->
+{% block page_title %}
+Chart for ...
+{% endblock page_title %}
+
+{% block page_specific_scripts %}
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <script src="https://code.highcharts.com/2.2/highcharts.js"></script>
     {% load chartit %}
     {{ chart|load_charts:"container" }}
-</head>
-<body>
-    <div id='container'> Chart will be rendered here </div>
-    <a href="/">Back</a>
-</body>
+{% endblock page_specific_scripts %}
+
+{% block content_class %}cards-page{% endblock content_class %}
+
+{% block body %}
+<div class="title-block">
+    <h3 class="title"> Reports </h3>
+    <p class="title-description"> Report type selection </p>
+</div>
+
+<section class="section">
+    <div class="row sameheight-container">
+        <div class="col-xl-12">
+            <div class="card card-default">
+
+                <div class="card-header">
+                    <div class="header-block">
+                        <p class="title"> Monthly reports </p>
+                    </div>
+                </div>
+                <div class="card-block">
+
+                    <div id='container'> Chart will be rendered here </div>
+                    <a href="/">Back</a>
+
+                </div>
+                <div class="card-footer"> Card Footer </div>
+
+            </div>
+            <!-- /.card -->
+        </div>
+        <!-- /.col-xl-6 -->
+    </div>
+</section>
+
+{% endblock body %}
