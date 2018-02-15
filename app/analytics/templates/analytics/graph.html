@@ -2,7 +2,7 @@
 
 <!-- TODO Add kwarg params to page title -->
 {% block page_title %}
-Chart for ...
+Chart for {{ year }}-{{ month }}{% if day %}-{{ day }}{% endif %}
 {% endblock page_title %}
 
 {% block page_specific_scripts %}
@@ -12,12 +12,17 @@ Chart for ...
     {{ chart|load_charts:"container" }}
 {% endblock page_specific_scripts %}
 
-{% block content_class %}cards-page{% endblock content_class %}
+{% block content_class %}charts-morris-page{% endblock content_class %}
 
 {% block body %}
-<div class="title-block">
-    <h3 class="title"> Reports </h3>
-    <p class="title-description"> Report type selection </p>
+<div class="row title-block">
+    <div class="col-sm-12 col-md-8">
+        <h3 class="title"> Reports <small>{{ page_title }}</small> </h3>
+        <p class="title-description"> Chart for {{ year }}-{{ month }}{% if day %}-{{ day }}{% endif %}</p>
+    </div>
+    <div class="col-sm-12 col-md-4">
+        <a type="button" href="/" class="btn btn-secondary pull-right"><i class="fa fa-arrow-left"></i> Go back</a>
+    </div>
 </div>
 
 <section class="section">
@@ -25,18 +30,9 @@ Chart for ...
         <div class="col-xl-12">
             <div class="card card-default">
 
-                <div class="card-header">
-                    <div class="header-block">
-                        <p class="title"> Monthly reports </p>
-                    </div>
-                </div>
                 <div class="card-block">
-
                     <div id='container'> Chart will be rendered here </div>
-                    <a href="/">Back</a>
-
                 </div>
-                <div class="card-footer"> Card Footer </div>
 
             </div>
             <!-- /.card -->

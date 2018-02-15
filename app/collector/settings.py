@@ -43,7 +43,7 @@ if os.getenv('ALLOWED_HOSTS', False):
     ALLOWED_HOSTS += [os.getenv('ALLOWED_HOSTS')]
 
 if DEV_MODE:
-    ALLOWED_HOSTS += ['localhost']
+    ALLOWED_HOSTS += ['*']
 
 ALLOWED_HOSTS += ['.resindevice.io']
 
@@ -64,8 +64,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

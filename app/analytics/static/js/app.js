@@ -9,7 +9,7 @@ config.ResponsiveBootstrapToolkitVisibilityDivs = {
     'sm': $('<div class="device-sm hidden-xs-down hidden-md-up"></div>'),
     'md': $('<div class="device-md hidden-sm-down hidden-lg-up"></div>'),
     'lg': $('<div class="device-lg hidden-md-down hidden-xl-up"></div>'),
-    'xl': $('<div class="device-xl hidden-lg-down			  "></div>'),
+    'xl': $('<div class="device-xl hidden-lg-down			  "></div>')
 };
 
 ResponsiveBootstrapToolkit.use('Custom', config.ResponsiveBootstrapToolkitVisibilityDivs);
@@ -1256,8 +1256,6 @@ var modalMedia = {
 // 	});
 // })
 
-
-});
 $(function() {
 
 	$("body").addClass("loaded");
