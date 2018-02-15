@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from chartit import DataPool, Chart
-from datetime import datetime
-
 from django.shortcuts import render, render_to_response
+from .helpers.helpers import chart_format_day_str, chart_format_month_str
 from .models import BleReport
 
 
@@ -45,37 +44,73 @@ def day_view(request, year, month, day):
 
     cht = Chart(
         datasource=report_data,
-        series_options=[{
-            'options': {
-                'type': 'line',
-                'stacking': False
-            },
-            'terms': {
-                'period': ['count']
+        series_options=[
+            {
+                'options': {
+                    'type': 'line',
+                    'stacking': False
                 },
-            }],
+                'terms': {
+                    'period': ['count']
+                }
+            }
+        ],
+
         chart_options={
+            'legend': {
+                'enabled': False
+            },
             'title': {
-                'text': 'Devices discovered on an hourly basis.'
+                'text': 'none',
+                'style': {
+                    'display': 'none',
+                }
             },
             'credits': False,
             'xAxis': {
                 'title': {
-                    'text': 'Hourly number'
+                    'text': 'none',
+                    'style': {
+                        'display': 'none'
+                    }
                 },
-                'type': 'datetime',
+                'labels': {
+                    'style': {
+                        'fontFamily': '"Open Sans", sans-serif',
+                        'color': '#7e8e9f'
+                    }
+                },
+                'dateTimeLabelFormats': {
+                    'hour': '%H:%M',
+                },
+                'tickInterval': 2,
             },
             'yAxis': {
-                'min': 0
+                'min': 0,
+                'title': {
+                    'text': 'Devices discovered',
+                    'style': {
+                        'fontFamily': '"Open Sans", sans-serif',
+                        'color': '#7e8e9f',
+                        'font-weight': 'normal'
+                    }
+                },
+                'labels': {
+                    'style': {
+                        'fontFamily': '"Open Sans", sans-serif',
+                        'color': '#7e8e9f'
+                    }
+                },
+                'gridLineColor': '#e9ecef'
             },
             'plotOptions': {
                 'series': {
-                    'pointIntervalUnit': 'day'
+                    'color': '#85CE36'
                 }
-            },
+            }
         },
+        x_sortf_mapf_mts=(None, chart_format_day_str, False)
     )
-
 
     return render_to_response(
         'analytics/graph.html',
@@ -113,19 +148,59 @@ def month_view(request, year, month):
                 }
             }],
         chart_options={
+            'legend': {
+                'enabled': False
+            },
             'title': {
-                'text': 'Devices discovered on an daily basis.'
+                'text': 'Devices discovered on an daily basis.',
+                'style': {
+                    'display': 'none',
+                }
             },
             'credits': False,
             'xAxis': {
                 'title': {
-                    'text': 'Daily number'
-                }
+                    'text': 'none',
+                    'style': {
+                        'display': 'none'
+                    }
+                },
+                'labels': {
+                    'style': {
+                        'fontFamily': '"Open Sans", sans-serif',
+                        'color': '#7e8e9f'
+                    }
+                },
+                'dateTimeLabelFormats': {
+                    'hour': '%H:%M',
+                },
+                'tickInterval': 3,
             },
             'yAxis': {
-                'min': 0
+                'min': 0,
+                'title': {
+                    'text': 'Devices discovered',
+                    'style': {
+                        'fontFamily': '"Open Sans", sans-serif',
+                        'color': '#7e8e9f',
+                        'font-weight': 'normal'
+                    }
+                },
+                'labels': {
+                    'style': {
+                        'fontFamily': '"Open Sans", sans-serif',
+                        'color': '#7e8e9f'
+                    }
+                },
+                'gridLineColor': '#e9ecef'
+            },
+            'plotOptions': {
+                'series': {
+                    'color': '#85CE36'
+                }
             }
-        }
+        },
+        x_sortf_mapf_mts=(None, chart_format_month_str, False)
     )
 
     return render_to_response(
