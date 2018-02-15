@@ -207,3 +207,11 @@ def month_view(request, year, month):
         'analytics/graph.html',
         context={'chart': cht, 'year': year, 'month': month, 'page_title': page_title}
     )
+
+
+def login_demo_view(request, *args, **kwargs):
+    page_title = "Login page"
+
+    return render_to_response(
+        'analytics/login.html', context={}
+    )

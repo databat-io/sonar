@@ -19,6 +19,7 @@
     </head>
     <body>
         
+        {% block main-wrapper %}
         <div class="main-wrapper">
             <div class="app sidebar-fixed" id="app">
                 
@@ -39,6 +40,8 @@
                 
             </div>
         </div>
+        {% endblock main-wrapper %}
+
         <!-- Reference block for JS -->
         <div class="ref" id="ref">
             <div class="color-primary"></div>
