@@ -30,14 +30,17 @@ def day_view(request, year, month, day):
     ).order_by('period')
 
     report_data = DataPool(
-           series=[
-               {'options': {
-                   'source': hourly_reports,
-               },
-                 'terms': [
-                   'period',
-                   'count']}
-                ]
+            series=[
+                {
+                    'options': {
+                        'source': hourly_reports,
+                    },
+                    'terms': [
+                        'period',
+                        'count'
+                    ]
+                }
+            ]
     )
 
 
@@ -61,11 +64,6 @@ def day_view(request, year, month, day):
                     'text': 'Hourly number'
                 },
                 'type': 'datetime',
-                # 'min': start_date,
-                # 'max': Date.UTC(2013,4,23),
-                'dateTimeLabelFormats': {
-                    day: '%H:%M'
-                }
             },
             'yAxis': {
                 'min': 0
