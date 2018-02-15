@@ -43,7 +43,6 @@ def day_view(request, year, month, day):
             ]
     )
 
-
     cht = Chart(
         datasource=report_data,
         series_options=[{
@@ -59,6 +58,7 @@ def day_view(request, year, month, day):
             'title': {
                 'text': 'Devices discovered on an hourly basis.'
             },
+            'credits': False,
             'xAxis': {
                 'title': {
                     'text': 'Hourly number'
@@ -110,10 +110,14 @@ def month_view(request, year, month):
             'title': {
                 'text': 'Devices discovered on an daily basis.'
             },
+            'credits': False,
             'xAxis': {
                 'title': {
                     'text': 'Daily number'
                 }
+            },
+            'yAxis': {
+                'min': 0
             }
         }
     )
