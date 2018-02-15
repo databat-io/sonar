@@ -34,6 +34,10 @@ body {
   overflow-y: auto;
   overflow-x: hidden; }
 
+.content {
+    padding-top: 50px !important;
+}
+
 #ref .color-primary {
   color: #85CE36; }
 
