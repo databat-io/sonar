@@ -41,12 +41,8 @@ Getting started
                 <form role="form" method="post">{% csrf_token %}
                     <div class="card-block">
                             <div class="form-group {% if month_form.errors %}has-error{% endif %}">
-                                <div class="input-group date" id="month_datepicker" data-target-input="nearest">
-                                    <input type="text" name="{{ month_form.month_selected.name }}" class="form-control datetimepicker-input" data-target="#month_datepicker"/>
-                                    <div class="input-group-append" data-target="#month_datepicker" data-toggle="datetimepicker">
-                                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
-                                    </div>
-
+                                <div class="form-group">
+                                    {{ month_form.month_selected }}
                                 </div>
                                 {% if month_form.errors %}
                                 <span class="has-error">
@@ -55,21 +51,6 @@ Getting started
                                 </span>
                                 {% endif %}
                             </div>
-                            <script type="text/javascript">
-                                $(function () {
-                                    $('#month_datepicker').datetimepicker({
-                                        enabledDates: [
-                                            {% for date in enabled_days_list %}
-                                            moment("{{ date }}"),
-                                            {% endfor %}
-                                        ],
-                                        format: 'MM/YYYY',
-                                        viewMode: 'months',
-                                        minDate: moment("{{ min_month }}"),
-                                        maxDate: moment("{{ min_month }}").endOf('month')
-                                    });
-                                });
-                            </script>
                     </div>
                     <div class="card-footer text-right">
                         <button type="submit" name="month_report" value="month_report" class="btn btn-primary">Go to report</button>
