@@ -14,6 +14,9 @@
         <!-- Theme styles -->
         <link rel="stylesheet" id="theme-style" href="{% static 'css/app.css' %}">
 
+        {% block page_specific_styles %}
+        {% endblock page_specific_styles %}
+
         {% block page_specific_scripts %}
         {% endblock page_specific_scripts %}
     </head>
@@ -50,7 +53,10 @@
                 <div class="color-secondary"></div>
             </div>
         </div>
+
+        {% block body_scripts %}
         <script src="{% static 'js/vendor.js' %}"></script>
         <script src="{% static 'js/app.js' %}"></script>
+        {% endblock body_scripts %}
     </body>
 </html>

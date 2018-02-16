@@ -1,21 +1,73 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from chartit import DataPool, Chart
-from django.shortcuts import render, render_to_response
+from django.shortcuts import render, render_to_response, reverse, redirect
 from .helpers.helpers import chart_format_day_str, chart_format_month_str
 from .models import BleReport
+from .forms import DayReportForm, MonthReportForm
+from datetime import datetime
 
 
-def index(request):
-    month_views_available = BleReport.objects.filter(
+def index(request, *args, **kwargs):
+
+    month_periods = BleReport.objects.filter(
         report_type='M'
-    ).order_by('period')
-    day_views_available = BleReport.objects.filter(
+    ).values_list('period', flat=True).order_by('period')
+    day_periods = BleReport.objects.filter(
         report_type='D'
-    ).order_by('period')
+    ).values_list('period', flat=True).order_by('period')
+
+    # Create lists of available days and pass to the view as context
+    enabled_days_list = []
+    for day_period in day_periods:
+        if day_period not in enabled_days_list and len(day_period) == 10:
+            enabled_days_list.append(day_period)
+
+    # Get the min day and max day bounds for the day report datepicker
+    min_day = None
+    max_day = None
+    if day_periods:
+        sorted(day_periods, key=lambda x: datetime.strptime(x, '%Y-%m-%d'))
+        min_day = day_periods[0]
+        max_day = day_periods[len(day_periods)-1]
+
+    # Get the minimum month to show for the month form datepicker
+    min_month = None
+    if month_periods:
+        sorted(month_periods, key=lambda x: datetime.strptime(x, '%Y-%m'))
+        min_month = month_periods[0]
+
+    day_form = DayReportForm()
+    month_form = MonthReportForm()
+
+    if request.method == "POST":
+
+        day_report_submitted = request.POST.get('day_report', None)
+        month_report_submitted = request.POST.get('month_report', None)
+
+        if day_report_submitted:
+            day_form = DayReportForm(request.POST)
+
+            if day_form.is_valid():
+                return redirect(reverse('day_view', kwargs=day_form.cleaned_data['day_selected']))
+            else:
+                pass # And re-render the template with form errors (done below)
+
+        elif month_report_submitted:
+            month_form = MonthReportForm(request.POST)
+
+            if month_form.is_valid():
+                return redirect(reverse('month_view', kwargs=month_form.cleaned_data['month_selected']))
+            else:
+                pass # And re-render the template with form errors (done below)
+
     context = {
-        'monthly_reports': month_views_available,
-        'daily_reports': day_views_available,
+        'min_month': min_month,
+        'min_day': min_day,
+        'max_day': max_day,
+        'enabled_days_list': enabled_days_list,
+        'day_form': day_form,
+        'month_form': month_form,
     }
     return render(request, 'analytics/index.html', context)
 
