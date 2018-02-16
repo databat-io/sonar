@@ -1,6 +1,5 @@
 {% extends "analytics/base.html" %}
 
-<!-- TODO Add kwarg params to page title -->
 {% block page_title %}
 Chart for {{ year }}-{{ month }}{% if day %}-{{ day }}{% endif %}
 {% endblock page_title %}
@@ -26,12 +25,22 @@ Chart for {{ year }}-{{ month }}{% if day %}-{{ day }}{% endif %}
 </div>
 
 <section class="section">
-    <div class="row sameheight-container">
+    <div class="row">
         <div class="col-xl-12">
             <div class="card card-default">
 
                 <div class="card-block">
-                    <div id='container'> Chart will be rendered here </div>
+                    <div class="card-title-block text-center mb-0 mt-2">
+                      <h3 class="title">
+                          {{ chart_title }}
+                          {% if day %}
+                            Devices discovered on an hourly basis on {{ year }}-{{ month }}-{{ day }}
+                          {% else %}
+                            Devices discovered during the month of {{ month }} {{ year }}
+                          {% endif %}
+                      </h3>
+                    </div>
+                    <div id='container'></div>
                 </div>
 
             </div>
