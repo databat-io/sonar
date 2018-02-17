@@ -14,8 +14,6 @@ services:
       - ./app:/usr/src/app
       - /docker/databat/sonar:/data/collector
     environment: []
-    depends_on:
-      - redis
   static_generator:
     build:
         dockerfile: Dockerfile.rpi
@@ -35,9 +33,8 @@ services:
       - ./app:/usr/src/app
     environment: []
     ports:
-      - "80:8000"
+      - "80:80"
     depends_on:
-      - redis
       - migrate
       - static_generator
   celery:
@@ -53,6 +50,8 @@ services:
       - /lib/firmware:/lib/firmware
       - /lib/modules:/lib/modules
       - /sys/fs/cgroup:/sys/fs/cgroup
+    networks:
+            hostnet: {}
     cap_add:
       - NET_ADMIN
       - SYS_ADMIN
@@ -62,3 +61,8 @@ services:
       - redis
       - migrate
       - static_generator
+
+networks:
+  hostnet:
+    external:
+      name: host
