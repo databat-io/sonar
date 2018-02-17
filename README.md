@@ -57,7 +57,36 @@ You then need to remove the bluetooth stack from the host:
 ```
 $ sudo apt-get purge bluez
 ```
-TODO: Complete.
+
+Install docker-compose
+
+```
+$ sudo apt-get install python-pip
+$ sudo pip install docker-compose
+```
+
+```
+$ docker-compose -f docker-compose-rpi.yaml up
+```
+
+```
+$ sudo docker run -d \
+    --name databat-sonar \
+    --restart unless-stopped \
+    --cap-add=SYS_ADMIN \
+    --cap-add=NET_ADMIN \
+    --net=host \
+    -v /run/dbus:/host/run/dbus \
+    -v /lib/firmware:/lib/firmware \
+    -v /lib/modules:/lib/modules \
+    -v /sys/fs/cgroup:/sys/fs/cgroup \
+    -v /databat:/data \
+    --privileged \
+    -p 80:80 \
+    databat/sonar
+```
+
+
 
 
 ### Building the docker image

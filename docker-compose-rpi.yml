@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+  redis:
+    image: redis
+    volumes:
+      - /docker/databat/redis:/data
+  migrate:
+    build:
+        dockerfile: Dockerfile.rpi
+        context: .
+    command: python manage.py migrate
+    volumes:
+      - ./app:/usr/src/app
+    environment:
+    depends_on:
+      - redis
+  static_generator:
+    build:
+        dockerfile: Dockerfile.rpi
+        context: .
+    command: python manage.py collectstatic --noinput
+    volumes:
+      - ./app:/usr/src/app
+    environment:
+    depends_on:
+      - redis
+  runserver:
+    build:
+        dockerfile: Dockerfile.rpi
+        context: .
+    volumes:
+      - ./app:/usr/src/app
+    environment:
+    ports:
+      - "80:8000"
+    depends_on:
+      - redis
+      - migrate
+      - static_generator
+  celery:
+    build:
+        dockerfile: Dockerfile.rpi
+        context: .
+    command: /usr/local/bin/celery -A collector worker -l info --concurrency=2 --beat
+    volumes:
+      - ./app:/usr/src/app
+      - /run/dbus:/host/run/dbus
+      - /lib/firmware:/lib/firmware
+      - /lib/modules:/lib/modules
+      - /sys/fs/cgroup:/sys/fs/cgroup
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    environment:
+    ports:
+      - "80:80"
+    depends_on:
+      - redis
+      - migrate
+      - static_generator

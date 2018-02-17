@@ -1,0 +1,10 @@
+FROM python:2
+
+WORKDIR /usr/src/app
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app/ .
+
+CMD [ "/usr/local/bin/gunicorn", "--access-logfile", "-", "--bind", "0.0.0.0:80", "collector.wsgi:application" ]
