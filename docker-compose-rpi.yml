@@ -44,7 +44,8 @@ services:
     build:
         dockerfile: Dockerfile.rpi
         context: .
-    command: /usr/local/bin/celery -A collector worker -l info --concurrency=2 --beat
+    command: /start_celery.sh
+    privileged: true
     volumes:
       - ./app:/usr/src/app
       - /docker/databat/sonar:/data/collector
