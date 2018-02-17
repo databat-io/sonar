@@ -49,19 +49,15 @@ The easiest way to install Docker on Raspbian is by simply running:
 
 ```
 $ curl -sSL https://get.docker.com | sh
+$ sudo usermod -aG docker pi
 ```
 
-You can then start the image by running:
+You then need to remove the bluetooth stack from the host:
 
 ```
-$ docker run -d \
-   --name databat-sonar \
-   --restart unless-stopped \
-   --privileged \
-   -p 8000:8000 \
-   -v /databat:/data \
-   databat/sonar
+$ sudo apt-get purge bluez
 ```
+TODO: Complete.
 
 
 ### Building the docker image
