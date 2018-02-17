@@ -1,6 +1,6 @@
 # README
 
-**STATUS:** Proof of concept
+**STATUS:** MVP
 
 ## Goal
 
@@ -11,13 +11,20 @@ The goal for this tool is two-fold:
 
 ## Use case
 
-The primary use case is to monitor foot traffic in retail environment and similar setups where you care about the foot flow.
+The primary use case is to monitor foot traffic in retail environment and similar setups where you care about the foot traffic flow. You could even deploy multiple Sonar devices and decrease the sensitivity in order to provide more granular.
+
+## Screenshots
+
+![Overview](/img/sonar_date_picker.png?raw=true)
+
+![Daily View](/img/sonar_daily_view.png?raw=true)
+
+There's also a live demo available [here](https://670f43c23e63a89894f3d2c357d515c8.resindevice.io/).
 
 ## Hardware requirements
 
  * A Raspberry Pi 3 Model B
  * Raspbian w/ Docker installed or Resin
-
 
 ## Installation
 
