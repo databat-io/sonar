@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 import re
+from .models import BleReport
 
 
 class DayReportForm(forms.Form):
@@ -43,18 +44,14 @@ class DayReportForm(forms.Form):
 
 class MonthReportForm(forms.Form):
     """
-    Description:
-    This is a form to capture a date *string* from a Bootstrap 4 datepicker on the index.html page.
-    The form then validates this date based on it's length and that it meets the correct pattern.
-
     Fields:
-    day_selected: a char field to take in a date string
+    month_select: Provides a filtered list of all 'M' type objects.
 
     Returns:
-    Returns a dict of values of parsed year, month, and day
+    Returns a dict of values of parsed year and month
     """
-
-    month_selected = forms.CharField(required=True, max_length=7)
+    month_selected = forms.ModelChoiceField(queryset=BleReport.objects.filter(
+            report_type='M').order_by('period'), required=True, widget=forms.Select(attrs={'class':'form-control'}))
 
     def __init__(self, *args, **kwargs):
         super(MonthReportForm, self).__init__(*args, **kwargs)
@@ -62,14 +59,8 @@ class MonthReportForm(forms.Form):
     def clean_month_selected(self):
         month_selected = self.cleaned_data['month_selected']
 
-        if len(month_selected) != 7:
-            raise ValidationError("You entered an invalid date for this field.")
-
-        if not re.match('^(?P<month>\d{2})/(?P<year>\d{4}).*?$', month_selected):
-            raise ValidationError("You entered an invalid date for this field.")
-
-        year = month_selected.split("/")[1]
-        month = month_selected.split("/")[0]
+        year = month_selected.period.split("-")[0]
+        month = month_selected.period.split("-")[1]
 
         return {'year': year, 'month': month}
 

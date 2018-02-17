@@ -10,9 +10,6 @@ from datetime import datetime
 
 def index(request, *args, **kwargs):
 
-    month_periods = BleReport.objects.filter(
-        report_type='M'
-    ).values_list('period', flat=True).order_by('period')
     day_periods = BleReport.objects.filter(
         report_type='D'
     ).values_list('period', flat=True).order_by('period')
@@ -30,12 +27,6 @@ def index(request, *args, **kwargs):
         sorted(day_periods, key=lambda x: datetime.strptime(x, '%Y-%m-%d'))
         min_day = day_periods[0]
         max_day = day_periods[len(day_periods)-1]
-
-    # Get the minimum month to show for the month form datepicker
-    min_month = None
-    if month_periods:
-        sorted(month_periods, key=lambda x: datetime.strptime(x, '%Y-%m'))
-        min_month = month_periods[0]
 
     day_form = DayReportForm()
     month_form = MonthReportForm()
@@ -62,7 +53,6 @@ def index(request, *args, **kwargs):
                 pass # And re-render the template with form errors (done below)
 
     context = {
-        'min_month': min_month,
         'min_day': min_day,
         'max_day': max_day,
         'enabled_days_list': enabled_days_list,
