@@ -12,6 +12,7 @@ services:
     command: python manage.py migrate
     volumes:
       - ./app:/usr/src/app
+      - /docker/databat/sonar:/data/collector
     environment: []
     depends_on:
       - redis
@@ -22,6 +23,7 @@ services:
     command: python manage.py collectstatic --noinput
     volumes:
       - ./app:/usr/src/app
+      - /docker/databat/sonar:/data/collector
     environment: []
     depends_on:
       - redis
@@ -45,6 +47,7 @@ services:
     command: /usr/local/bin/celery -A collector worker -l info --concurrency=2 --beat
     volumes:
       - ./app:/usr/src/app
+      - /docker/databat/sonar:/data/collector
       - /run/dbus:/host/run/dbus
       - /lib/firmware:/lib/firmware
       - /lib/modules:/lib/modules
@@ -52,7 +55,8 @@ services:
     cap_add:
       - NET_ADMIN
       - SYS_ADMIN
-    environment: []
+    environment:
+      - REDIS_HOST=redis
     depends_on:
       - redis
       - migrate

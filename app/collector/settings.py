@@ -103,7 +103,7 @@ if not DEV_MODE:
     DATABASE_PATH = '/data/collector'
 else:
     DATABASE_PATH = BASE_DIR
-    
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -148,7 +148,12 @@ USE_TZ = True
 
 DEV_MODE = os.getenv('DEV_MODE', False)
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
+REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
+REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
+REDIS_DB = int(os.getenv('REDIS_DB', 0))
+
+
+CELERY_BROKER_URL = 'redis://{}:{}/{}'.format(REDIS_HOST, REDIS_PORT, REDIS_DB)
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
