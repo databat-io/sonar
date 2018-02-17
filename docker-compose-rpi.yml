@@ -12,7 +12,7 @@ services:
     command: python manage.py migrate
     volumes:
       - ./app:/usr/src/app
-    environment:
+    environment: []
     depends_on:
       - redis
   static_generator:
@@ -22,7 +22,7 @@ services:
     command: python manage.py collectstatic --noinput
     volumes:
       - ./app:/usr/src/app
-    environment:
+    environment: []
     depends_on:
       - redis
   runserver:
@@ -31,7 +31,7 @@ services:
         context: .
     volumes:
       - ./app:/usr/src/app
-    environment:
+    environment: []
     ports:
       - "80:8000"
     depends_on:
@@ -52,9 +52,7 @@ services:
     cap_add:
       - NET_ADMIN
       - SYS_ADMIN
-    environment:
-    ports:
-      - "80:80"
+    environment: []
     depends_on:
       - redis
       - migrate
