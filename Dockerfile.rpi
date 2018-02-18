@@ -28,6 +28,6 @@ RUN cd /usr/local/lib/python2.7/site-packages/bluepy && \
     make
 
 COPY app/ .
-COPY start_celery.sh /
+COPY start_* /
 
 CMD [ "/usr/local/bin/gunicorn", "--access-logfile", "-", "--bind", "0.0.0.0:80", "collector.wsgi:application" ]

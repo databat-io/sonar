@@ -41,7 +41,7 @@ services:
     build:
         dockerfile: Dockerfile.rpi
         context: .
-    command: /usr/bin/hciattach -n /dev/ttyAMA0 bcm43xx 921600 noflow -
+    command: /start_ble.sh
     privileged: true
     volumes:
       - /run/dbus:/host/run/dbus
