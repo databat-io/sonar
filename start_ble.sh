@@ -1,15 +1,13 @@
 #!/bin/bash
 
-# Clean up
-rmmod hci_uart btbcm bluetooth xt_tcpudp veth
-
-# Start up
-hciattach /dev/ttyAMA0 bcm43xx 921600 noflow -
-hciconfig hci0 up
+# Only bring up interface if it is absent
+if [ -z $(hciconfig) ]; then
+    hciattach /dev/ttyAMA0 bcm43xx 921600 noflow -
+    hciconfig hci0 up
+fi
 
 SOFT_COUNTER=0
 SOFT_COUNTER_LIMIT=3
-
 while [ "$SOFT_COUNTER" -lt "$SOFT_COUNTER_LIMIT" ]; do
     echo "Scan for devices..."
     if [ $(hcitool scan | wc -l) -le 1 ]; then
