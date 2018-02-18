@@ -4,8 +4,6 @@ SOFT_COUNTER=0
 SOFT_COUNTER_LIMIT=3
 
 while [ "$SOFT_COUNTER" -lt "$SOFT_COUNTER_LIMIT" ]; do
-    echo "Attaching hci0..."
-    /usr/bin/hciattach /dev/ttyAMA0 bcm43xx 921600 noflow -
 
     echo "Bring hci0 up..."
     hciconfig hci0 up
@@ -49,7 +47,6 @@ if [ $FAILED -eq 1 ]; then
     echo "Hard error counter: $HARD_COUNTER/5"
     echo "All tests failed. Taking hard action in $SLEEP seconds."
     sleep $SLEEP
-
 fi
 
 /usr/local/bin/celery \

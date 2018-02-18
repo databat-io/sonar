@@ -25,7 +25,7 @@ services:
     environment: []
     depends_on:
       - redis
-  runserver:
+  gunicorn:
     build:
         dockerfile: Dockerfile.rpi
         context: .
@@ -37,32 +37,36 @@ services:
     depends_on:
       - migrate
       - static_generator
+  ble_init:
+    build:
+        dockerfile: Dockerfile.rpi
+        context: .
+    command: /usr/bin/hciattach -n /dev/ttyAMA0 bcm43xx 921600 noflow -
+    privileged: true
+    volumes:
+      - /run/dbus:/host/run/dbus
+      - /lib/firmware:/lib/firmware
+      - /lib/modules:/lib/modules
+      - /sys/fs/cgroup:/sys/fs/cgroup
+    network_mode: "host"
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    environment:
+      - REDIS_HOST=redis
   celery:
     build:
         dockerfile: Dockerfile.rpi
         context: .
     command: /start_celery.sh
-    privileged: true
     volumes:
       - ./app:/usr/src/app
       - /docker/databat/sonar:/data/collector
-      - /run/dbus:/host/run/dbus
-      - /lib/firmware:/lib/firmware
-      - /lib/modules:/lib/modules
-      - /sys/fs/cgroup:/sys/fs/cgroup
-    networks:
-            hostnet: {}
-    cap_add:
-      - NET_ADMIN
-      - SYS_ADMIN
+    network_mode: "host"
     environment:
       - REDIS_HOST=redis
     depends_on:
       - redis
       - migrate
       - static_generator
-
-networks:
-  hostnet:
-    external:
-      name: host
+      - ble_init
