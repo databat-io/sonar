@@ -4,10 +4,6 @@ SOFT_COUNTER=0
 SOFT_COUNTER_LIMIT=3
 
 while [ "$SOFT_COUNTER" -lt "$SOFT_COUNTER_LIMIT" ]; do
-
-    echo "Bring hci0 up..."
-    hciconfig hci0 up
-
     echo "Scan for devices..."
     if [ $(hcitool scan | wc -l) -le 1 ]; then
         FAILED=1
