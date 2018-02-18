@@ -5,6 +5,8 @@ services:
     image: redis
     volumes:
       - /docker/databat/redis:/data
+    networks:
+      - sonar
   migrate:
     build:
         dockerfile: Dockerfile.rpi
@@ -34,6 +36,8 @@ services:
     environment: []
     ports:
       - "80:80"
+    networks:
+      - sonar
     depends_on:
       - migrate
       - static_generator
@@ -62,11 +66,14 @@ services:
     volumes:
       - ./app:/usr/src/app
       - /docker/databat/sonar:/data/collector
-    network_mode: "host"
     environment:
       - REDIS_HOST=redis
+    networks:
+      - sonar
     depends_on:
       - redis
       - migrate
       - static_generator
       - ble_init
+networks:
+    sonar:
