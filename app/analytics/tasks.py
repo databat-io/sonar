@@ -44,19 +44,32 @@ def ble_generate_hourly_report(date=None):
 
 
 @task
-def ble_fill_hourly_report_backlog():
-    oldest_record = BleReport.objects.filter(report_type='H').order_by('period')[0].period
-    newest_record = BleReport.objects.filter(report_type='H').order_by('-period')[0].period
-    record_to_check = datetime.strptime(oldest_record, '%Y-%m-%dT%H:%M')
+def ble_fill_report_backlog(report_type):
 
-    while record_to_check < datetime.strptime(newest_record, '%Y-%m-%dT%H:%M'):
+    if report_type == 'H':
+        date_format = '%Y-%m-%dT%H:%M'
+    elif report_type == 'D':
+        date_format = '%Y-%m-%d'
+    else:
+        return 'No report type selected'
+
+    oldest_record = BleReport.objects.filter(report_type=report_type).order_by('period')[0].period
+    newest_record = BleReport.objects.filter(report_type=report_type).order_by('-period')[0].period
+    record_to_check = datetime.strptime(oldest_record, date_format)
+
+    while record_to_check < datetime.strptime(newest_record, date_format):
         if BleReport.objects.filter(period=record_to_check):
-            return ble_generate_hourly_report(
-                date=record_to_check.strftime('%Y-%m-%dT%H:00')
-            )
+            if report_type == 'H':
+                # Custom handling to always get start of the hour
+                date = record_to_check.strftime('%Y-%m-%dT%H:00')
+            else:
+                date = record_to_check.strftime(date_format)
+
+            return ble_generate_hourly_report(date=date)
         else:
             record_to_check = record_to_check + timedelta(hours=1)
     return 'No more records to populate.'
+
 
 @task
 def ble_generate_daily_report(date=None):

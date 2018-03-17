@@ -163,13 +163,14 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'analytics.tasks.ble_generate_hourly_report',
         'schedule': crontab(minute=10),
     },
-    'ble_fill_hourly_report_backlog': {
-        'task': 'analytics.tasks.ble_generate_hourly_report',
-        'schedule': crontab(minute=10),
+    'generate-hourly-report-backlog': {
+        'task': 'analytics.tasks.ble_fill_report_backlog',
+        'schedule': crontab(minute='*/10'),
+        'args': ('H')
     },
     'generate-daily-report': {
         'task': 'analytics.tasks.ble_generate_daily_report',
-        'schedule': crontab(minute='*/10'),
+        'schedule': crontab(minute=5, hour=0),
     },
     'generate-monthly-report': {
         'task': 'analytics.tasks.ble_generate_monthly_report',
