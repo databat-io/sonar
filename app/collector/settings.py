@@ -181,6 +181,11 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'analytics.tasks.ble_generate_monthly_report',
         'schedule': crontab(minute=1, hour=3, day_of_month=1),
     },
+    'generate-monthly-report-backlog': {
+        'task': 'analytics.tasks.ble_fill_report_backlog',
+        'schedule': crontab(minute='*/10'),
+        'args': ('M',)
+    },
 }
 
 
