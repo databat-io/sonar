@@ -1,8 +1,8 @@
 from __future__ import absolute_import, unicode_literals
-from ble.models import ScanRecord
 from analytics.models import BleReport
-from datetime import datetime, timedelta
+from ble.models import ScanRecord
 from celery import task
+from datetime import datetime, timedelta
 from django.utils import timezone
 import pytz
 
@@ -42,6 +42,21 @@ def ble_generate_hourly_report(date=None):
         period=date,
     )
 
+
+@task
+def ble_fill_hourly_report_backlog():
+    oldest_record = BleReport.objects.filter(report_type='H').order_by('period')[0].period
+    newest_record = BleReport.objects.filter(report_type='H').order_by('-period')[0].period
+    record_to_check = datetime.strptime(oldest_record, '%Y-%m-%dT%H:%M')
+
+    while record_to_check < datetime.strptime(newest_record, '%Y-%m-%dT%H:%M'):
+        if BleReport.objects.filter(period=record_to_check):
+            return ble_generate_hourly_report(
+                date=record_to_check.strftime('%Y-%m-%dT%H:00')
+            )
+        else:
+            record_to_check = record_to_check + timedelta(hours=1)
+    return 'No more records to populate.'
 
 @task
 def ble_generate_daily_report(date=None):

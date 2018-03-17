@@ -103,7 +103,7 @@ if not DEV_MODE:
     DATABASE_PATH = '/data/collector'
 else:
     DATABASE_PATH = BASE_DIR
-    
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -163,9 +163,13 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'analytics.tasks.ble_generate_hourly_report',
         'schedule': crontab(minute=10),
     },
+    'ble_fill_hourly_report_backlog': {
+        'task': 'analytics.tasks.ble_generate_hourly_report',
+        'schedule': crontab(minute=10),
+    },
     'generate-daily-report': {
         'task': 'analytics.tasks.ble_generate_daily_report',
-        'schedule': crontab(minute=5, hour=0),
+        'schedule': crontab(minute='*/10'),
     },
     'generate-monthly-report': {
         'task': 'analytics.tasks.ble_generate_monthly_report',
