@@ -44,34 +44,6 @@ def ble_generate_hourly_report(date=None):
 
 
 @task
-def ble_fill_report_backlog(report_type):
-
-    if report_type == 'H':
-        date_format = '%Y-%m-%dT%H:%M'
-    elif report_type == 'D':
-        date_format = '%Y-%m-%d'
-    else:
-        return 'No report type selected'
-
-    oldest_record = BleReport.objects.filter(report_type=report_type).order_by('period')[0].period
-    newest_record = BleReport.objects.filter(report_type=report_type).order_by('-period')[0].period
-    record_to_check = datetime.strptime(oldest_record, date_format)
-
-    while record_to_check < datetime.strptime(newest_record, date_format):
-        if BleReport.objects.filter(period=record_to_check):
-            if report_type == 'H':
-                # Custom handling to always get start of the hour
-                date = record_to_check.strftime('%Y-%m-%dT%H:00')
-            else:
-                date = record_to_check.strftime(date_format)
-
-            return ble_generate_hourly_report(date=date)
-        else:
-            record_to_check = record_to_check + timedelta(hours=1)
-    return 'No more records to populate.'
-
-
-@task
 def ble_generate_daily_report(date=None):
     """
     Takes the input in the form YYYY-MM-DD
@@ -136,3 +108,52 @@ def ble_generate_monthly_report(date=None):
         timezone=tz,
         period=date,
     )
+
+
+@task
+def ble_fill_report_backlog(report_type):
+
+    if report_type == 'H':
+        date_format = '%Y-%m-%dT%H:%M'
+    elif report_type == 'D':
+        date_format = '%Y-%m-%d'
+    elif report_type == 'M':
+        date_format = '%Y-%m'
+    else:
+        return 'No report type selected'
+
+    tz = timezone.now().tzname()
+    oldest_scan_record = ScanRecord.objects.filter().order_by(
+        '-timestamp'
+    )[0].timestamp.replace(tzinfo=pytz.timezone(tz))
+
+    newest_report_record = BleReport.objects.filter(
+        report_type=report_type
+    ).order_by('-period')[0].period
+
+    record_to_check = oldest_scan_record + timedelta(hours=1)
+
+    while record_to_check < datetime.strptime(
+        newest_report_record, date_format
+    ).replace(tzinfo=pytz.timezone(tz)):
+        if BleReport.objects.filter(period=record_to_check):
+            if report_type == 'H':
+                return ble_generate_hourly_report(
+                    date=record_to_check.strftime('%Y-%m-%dT%H:00')
+                )
+            elif report_type == 'D':
+                return ble_generate_daily_report(
+                    date=record_to_check.strftime(date_format)
+                )
+            elif report_type == 'M':
+                return ble_generate_monthly_report(
+                    date=record_to_check.strftime(date_format)
+                )
+        else:
+            if report_type == 'H':
+                record_to_check = record_to_check + timedelta(hours=1)
+            elif report_type == 'D':
+                record_to_check = record_to_check + timedelta(days=1)
+            elif report_type == 'M':
+                record_to_check = record_to_check + timedelta(months=1)
+    return 'No more records to populate.'
