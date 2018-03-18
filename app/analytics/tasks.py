@@ -124,36 +124,32 @@ def ble_fill_report_backlog(report_type):
 
     tz = timezone.now().tzname()
     oldest_scan_record = ScanRecord.objects.filter().order_by(
+        'timestamp'
+    )[0].timestamp.replace(tzinfo=pytz.timezone(tz))
+
+    newest_scan_record = ScanRecord.objects.filter().order_by(
         '-timestamp'
     )[0].timestamp.replace(tzinfo=pytz.timezone(tz))
 
-    newest_report_record = BleReport.objects.filter(
-        report_type=report_type
-    ).order_by('-period')[0].period
-
     record_to_check = oldest_scan_record + timedelta(hours=1)
 
-    while record_to_check < datetime.strptime(
-        newest_report_record, date_format
-    ).replace(tzinfo=pytz.timezone(tz)):
-        if BleReport.objects.filter(period=record_to_check):
-            if report_type == 'H':
-                return ble_generate_hourly_report(
-                    date=record_to_check.strftime('%Y-%m-%dT%H:00')
-                )
-            elif report_type == 'D':
-                return ble_generate_daily_report(
-                    date=record_to_check.strftime(date_format)
-                )
-            elif report_type == 'M':
-                return ble_generate_monthly_report(
-                    date=record_to_check.strftime(date_format)
-                )
-        else:
-            if report_type == 'H':
+    while record_to_check < newest_scan_record:
+        if report_type == 'H':
+            period = record_to_check.strftime('%Y-%m-%dT%H:00')
+            if not BleReport.objects.filter(period=period):
+                return ble_generate_hourly_report(date=period)
+            else:
                 record_to_check = record_to_check + timedelta(hours=1)
-            elif report_type == 'D':
+        elif report_type == 'D':
+            period = record_to_check.strftime(date_format)
+            if not BleReport.objects.filter(period=period):
+                return ble_generate_daily_report(date=period)
+            else:
                 record_to_check = record_to_check + timedelta(days=1)
-            elif report_type == 'M':
+        elif report_type == 'M':
+            period = record_to_check.strftime(date_format)
+            if not BleReport.objects.filter(period=period):
+                return ble_generate_monthly_report(date=period)
+            else:
                 record_to_check = record_to_check + timedelta(months=1)
     return 'No more records to populate.'
