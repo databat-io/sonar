@@ -12,7 +12,7 @@ import pytz
 def ping_mixpanel():
     mp = Mixpanel(settings.MIXPANEL_TOKEN)
     try:
-        mp.track(settings.device_id, 'ping')
+        mp.track(settings.DEVICE_ID, 'ping')
     except MixpanelException:
         pass
     except AttributeError:
