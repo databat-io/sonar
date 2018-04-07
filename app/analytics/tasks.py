@@ -4,7 +4,19 @@ from ble.models import ScanRecord
 from celery import task
 from datetime import datetime, timedelta
 from django.utils import timezone
+from django.conf import settings
+from mixpanel import Mixpanel, MixpanelException
 import pytz
+
+
+def ping_mixpanel():
+    mp = Mixpanel(settings.MIXPANEL_TOKEN)
+    try:
+        mp.track(settings.device_id, 'ping')
+    except MixpanelException:
+        pass
+    except AttributeError:
+        pass
 
 
 @task
@@ -14,6 +26,8 @@ def ble_generate_hourly_report(date=None):
     as per ISO 8601. If no input is specified,
     the last hour will be used
     """
+
+    ping_mixpanel()
 
     # We use this for automated reports from celery
     if not date:
