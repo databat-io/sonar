@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-import path
 import random
 import string
 from celery.schedules import crontab
@@ -128,8 +127,8 @@ def GET_DEVICE_ID():
     if os.getenv('RESIN_DEVICE_UUID', False):
         return os.getenv('RESIN_DEVICE_UUID')
 
-    device_id_file = path.join(DATABASE_PATH, 'device_id')
-    if not path.isfile(device_id_file):
+    device_id_file = os.path.join(DATABASE_PATH, 'device_id')
+    if not os.path.isfile(device_id_file):
         device_id = ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(15))
         with open(device_id_file, 'w') as f:
             f.write(device_id)
