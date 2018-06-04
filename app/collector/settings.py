@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import random
+import string
 from celery.schedules import crontab
 from distutils.util import strtobool
 
@@ -28,7 +30,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'c&1d9t^p_ssul^n=i9t+xr5bd&l2yx*q&v1i@rv!x9_j2zp&_l'
+SECRET_KEY = os.getenv(
+    'DJANGO_SECRET',
+    'c&1d9t^p_ssul^n=i9t+xr5bd&l2yx*q&v1i@rv!x9_j2zp&_l'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', False)
@@ -103,7 +108,7 @@ if not DEV_MODE:
     DATABASE_PATH = '/data/collector'
 else:
     DATABASE_PATH = BASE_DIR
-    
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -112,6 +117,28 @@ DATABASES = {
 }
 
 DEVICE_IGNORE_THRESHOLD = int(os.getenv('DEVICE_IGNORE_THRESHOLD', 5000))
+
+
+def GET_DEVICE_ID():
+    """
+    Return the device id. Use Resin device ID if available.
+    """
+
+    if os.getenv('RESIN_DEVICE_UUID', False):
+        return os.getenv('RESIN_DEVICE_UUID')
+
+    device_id_file = os.path.join(DATABASE_PATH, 'device_id')
+    if not os.path.isfile(device_id_file):
+        device_id = ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(15))
+        with open(device_id_file, 'w') as f:
+            f.write(device_id)
+    else:
+        with open(device_id_file, 'r') as f:
+            device_id = f.read()
+    return device_id
+
+
+DEVICE_ID = GET_DEVICE_ID()
 
 
 # Password validation
@@ -146,6 +173,8 @@ USE_L10N = True
 
 USE_TZ = True
 
+MIXPANEL_TOKEN = 'bdf69de60cd0602dd2fd760df66b5cc7'
+
 DEV_MODE = os.getenv('DEV_MODE', False)
 
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
@@ -163,13 +192,28 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'analytics.tasks.ble_generate_hourly_report',
         'schedule': crontab(minute=10),
     },
+    'generate-hourly-report-backlog': {
+        'task': 'analytics.tasks.ble_fill_report_backlog',
+        'schedule': crontab(minute='*/10'),
+        'args': ('H',)
+    },
     'generate-daily-report': {
         'task': 'analytics.tasks.ble_generate_daily_report',
         'schedule': crontab(minute=5, hour=0),
     },
+    'generate-daily-report-backlog': {
+        'task': 'analytics.tasks.ble_fill_report_backlog',
+        'schedule': crontab(minute='15'),
+        'args': ('D',)
+    },
     'generate-monthly-report': {
         'task': 'analytics.tasks.ble_generate_monthly_report',
         'schedule': crontab(minute=1, hour=3, day_of_month=1),
+    },
+    'generate-monthly-report-backlog': {
+        'task': 'analytics.tasks.ble_fill_report_backlog',
+        'schedule': crontab(minute='25'),
+        'args': ('M',)
     },
 }
 
