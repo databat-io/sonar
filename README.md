@@ -19,7 +19,6 @@ The primary use case is to monitor foot traffic in retail environment and simila
 
 ![Daily View](/img/sonar_daily_view.png?raw=true)
 
-There's also a live demo available [here](https://670f43c23e63a89894f3d2c357d515c8.resindevice.io/).
 
 ## Hardware requirements
 
