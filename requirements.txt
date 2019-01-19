@@ -1,8 +1,8 @@
 Django==1.11.18
 bluepy==1.1.4
-celery==4.1.0
+celery==4.2.1
 django-chartit==0.2.9
-djangorestframework==3.7.7
+djangorestframework==3.9.1
 gunicorn==19.7.1
 mixpanel==4.3.2
 netifaces==0.10.6
