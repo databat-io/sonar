@@ -98,7 +98,11 @@ def ble_generate_monthly_report(date=None):
 
     # We use this for automated reports from celery
     if not date:
-        last_month = timezone.now() - timedelta(months=1)
+        # Ugly workaround to get last month
+        # https://stackoverflow.com/questions/9724906/python-date-of-the-previous-month
+        today = timezone.now()
+        first = today.replace(day=1)
+        last_month = first - datetime.timedelta(days=1)
         date = last_month.strftime('%Y-%m')
 
     if BleReport.objects.filter(period=date).first():
