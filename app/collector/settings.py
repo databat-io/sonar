@@ -50,7 +50,7 @@ if os.getenv('ALLOWED_HOSTS', False):
 if DEV_MODE:
     ALLOWED_HOSTS += ['*']
 
-ALLOWED_HOSTS += ['.resindevice.io', 'balena-devices.com']
+ALLOWED_HOSTS += ['.resindevice.io', '.balena-devices.com']
 
 
 # Application definition
