@@ -23,19 +23,20 @@ The primary use case is to monitor foot traffic in retail environment and simila
 ## Hardware requirements
 
  * A Raspberry Pi 3 Model B
- * Raspbian w/ Docker installed or Resin
+ * Raspbian w/ Docker installed or Balena
 
 ## Installation
 
-### Resin
+### Balena
 
-The easiest way to run Sonar is through Resin. After creating an application in Resin, simply run:
+The easiest way to run Sonar is through Balena. After creating an application on Balena, simply run:
 
 ```
+
 $ git clone git@github.com:databat-io/sonar.git
 $ cd sonar
-$ git remote add resin ssmit@git.resin.io:ssmit/mysonarapp.git
-$ git push master resin
+$ git remote add balena username@git.balena-cloud.com:username/mysonarapp.git
+$ git push balena master
 ```
 
 Once the build is done, the device will automatically pull down the image and start running.
