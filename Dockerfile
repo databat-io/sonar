@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
     pwgen \
     python-numpy \
     python-smbus && \
+    systemd && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set our working directory
