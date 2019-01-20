@@ -1,4 +1,4 @@
-FROM resin/raspberrypi3-python
+FROM balenalib/raspberrypi3-debian-python2.7.15-stretch-build-20181207
 
 RUN apt-get update && apt-get install -yq --no-install-recommends \
     bluez \
