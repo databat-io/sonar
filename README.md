@@ -35,7 +35,7 @@ The easiest way to run Sonar is through Balena. After creating an application on
 
 $ git clone git@github.com:databat-io/sonar.git
 $ cd sonar
-$ git remote add balena username@git.balena-cloud.com:daniel5/mysonarapp.git
+$ git remote add balena username@git.balena-cloud.com:username/mysonarapp.git
 $ git push balena master
 ```
 
