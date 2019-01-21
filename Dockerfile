@@ -5,9 +5,9 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
     bluez-firmware \
     dnsmasq \
     pwgen \
-    python-numpy \
-    python-pip \
-    python-smbus \
+    python2-numpy \
+    python2-pip \
+    python2-smbus \
     systemd-sysv && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
