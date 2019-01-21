@@ -40,9 +40,8 @@ COPY ./requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt --no-cache-dir
 
 # Fix for error with bluepy
-RUN find / -iname bluepy -type f
-RUN cd /usr/lib/python2.7/site-packages/bluepy && \
-    make
+#RUN cd /usr/lib/python2.7/site-packages/bluepy && \
+#    make
 
 # Install Redis
 ARG REDIS_VERSION=4.0.6
