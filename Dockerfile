@@ -1,6 +1,7 @@
 FROM resin/raspberrypi3-python
 
-RUN apt-get update && apt-get install -yq --no-install-recommends \
+RUN apt-get update && apt-get upgrade &&
+    apt-get install -yq --no-install-recommends \
     bluez \
     bluez-firmware \
     dnsmasq \
@@ -21,7 +22,7 @@ COPY ./requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt --no-cache-dir
 
 # Fix for error with bluepy
-RUN cd /usr/lib/python2.7/site-packages/bluepy && \
+RUN cd /usr/local/lib/python2.7/site-packages/bluepy && \
     make
 
 # Install Redis
