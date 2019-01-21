@@ -1,4 +1,4 @@
-FROM balenalib/%%BALENA_MACHINE_NAME%%-debian
+FROM balenalib/%%BALENA_MACHINE_NAME%%-debian-stretch
 
 RUN apt-get update && apt-get install -yq --no-install-recommends \
     bluez \
@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
     dnsmasq \
     pwgen \
     python-numpy \
-    python-smbus && \
+    python-smbus \
     systemd-sysv && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
