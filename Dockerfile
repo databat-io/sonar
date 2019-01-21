@@ -1,4 +1,4 @@
-FROm balenalib/raspberrypi3-debian:stretch-build
+FROM balenalib/raspberrypi3-debian:jessie-build
 
 RUN apt-get update && apt-get install -yq --no-install-recommends \
     bluez \
@@ -40,8 +40,8 @@ COPY ./requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt --no-cache-dir
 
 # Fix for error with bluepy
-#RUN cd /usr/lib/python2.7/site-packages/bluepy && \
-#    make
+RUN cd /usr/lib/python2.7/site-packages/bluepy && \
+    make
 
 # Install Redis
 ARG REDIS_VERSION=4.0.6
