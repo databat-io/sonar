@@ -1,4 +1,4 @@
-FROM python:2.7-jessie
+FROM balenalib/%%BALENA_MACHINE_NAME%%-debian
 
 RUN apt-get update && apt-get install -yq --no-install-recommends \
     bluez \
