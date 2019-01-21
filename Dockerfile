@@ -1,4 +1,4 @@
-FROM python:2.7-stretch
+FROM python:2.7-jessie
 
 RUN apt-get update && apt-get install -yq --no-install-recommends \
     bluez \
