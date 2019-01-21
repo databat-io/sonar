@@ -1,4 +1,4 @@
-FROM balenalib/raspberrypi3-debian:jessie-build
+FROM python:2.7-stretch
 
 RUN apt-get update && apt-get install -yq --no-install-recommends \
     bluez \
