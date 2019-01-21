@@ -1,14 +1,13 @@
 FROM resin/raspberrypi3-python
 
-RUN apt-get update && \
-    apt-get install -yq --no-install-recommends \
+RUN apt-get update && apt-get install -yq --no-install-recommends \
     bluez \
     bluez-firmware \
     dnsmasq \
     pwgen \
     python-numpy \
     python-smbus && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set our working directory
 WORKDIR /usr/src/app
