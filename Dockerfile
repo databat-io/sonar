@@ -1,4 +1,4 @@
-FROM balenalib/raspberrypi3-debian:jessie-build
+FROM resin/raspberrypi3-python
 
 RUN apt-get update && apt-get install -yq --no-install-recommends \
     bluez \
@@ -10,23 +10,7 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
     python-setuptools \
     python-smbus \
     python-dev \
-    systemd-sysv && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# We never want these to run in a container
-RUN systemctl mask \
-    dev-hugepages.mount \
-    sys-fs-fuse-connections.mount \
-    sys-kernel-config.mount \
-
-    display-manager.service \
-    getty@.service \
-    systemd-logind.service \
-    systemd-remount-fs.service \
-
-    getty.target \
-    graphical.target
-
 
 # Set our working directory
 WORKDIR /usr/src/app
