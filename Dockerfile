@@ -6,12 +6,12 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
     dnsmasq \
     pwgen \
     python-numpy \
+    python-pip \
     python-smbus \
     systemd-sysv && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # We never want these to run in a container
-# Feel free to edit the list but this is the one we used
 RUN systemctl mask \
     dev-hugepages.mount \
     sys-fs-fuse-connections.mount \
