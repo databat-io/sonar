@@ -1,4 +1,4 @@
-FROM balenalib/%%BALENA_MACHINE_NAME%%-debian-stretch
+FROm balenalib/raspberrypi3-debian:stretch-build
 
 RUN apt-get update && apt-get install -yq --no-install-recommends \
     bluez \
