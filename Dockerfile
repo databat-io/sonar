@@ -1,4 +1,4 @@
-FROM balenalib/raspberrypi3-debian-python:2.7.15-stretch-build-20181207
+FROM balenalib/raspberrypi3-debian:stretch-build
 
 RUN apt-get update && apt-get install -yq --no-install-recommends \
     bluez \
