@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
     python-pip \
     python-setuptools \
     python-smbus \
+    python-dev \
     systemd-sysv && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
