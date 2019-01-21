@@ -7,8 +7,24 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
     pwgen \
     python-numpy \
     python-smbus && \
-    systemd && \
+    systemd-sysv && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# We never want these to run in a container
+# Feel free to edit the list but this is the one we used
+RUN systemctl mask \
+    dev-hugepages.mount \
+    sys-fs-fuse-connections.mount \
+    sys-kernel-config.mount \
+
+    display-manager.service \
+    getty@.service \
+    systemd-logind.service \
+    systemd-remount-fs.service \
+
+    getty.target \
+    graphical.target
+
 
 # Set our working directory
 WORKDIR /usr/src/app
