@@ -24,15 +24,8 @@ RUN pip install -r /requirements.txt --no-cache-dir
 RUN cd /usr/local/lib/python2.7/site-packages/bluepy && \
     make
 
-COPY systemd/*.service /etc/systemd/system/
-RUN systemctl enable redis.service && \
-    systemctl enable gunicorn.service
-
 # Copy in actual code base
 COPY django /usr/src/app/
 COPY start.sh /
-
-# switch on systemd init system in container
-ENV INITSYSTEM on
 
 CMD /start.sh
