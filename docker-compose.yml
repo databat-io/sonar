@@ -11,6 +11,7 @@ services:
     environment:
       CELERY: 1
     privileged: true
+    network_mode: host
     labels:
       io.balena.features.dbus: "1"
   gunicorn:
