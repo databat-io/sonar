@@ -10,7 +10,8 @@ services:
       - 'resin-data:/data'
     environment:
       CELERY: 1
-    privileged: true
+    labels:
+      io.balena.features.dbus: "1"
   gunicorn:
     build: ./app
     expose:
