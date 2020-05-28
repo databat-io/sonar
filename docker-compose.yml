@@ -25,7 +25,5 @@ services:
       GUNICORN: 1
   redis:
     build: ./redis
-    expose:
-      - "6379"
     volumes:
       - 'resin-data:/data'
