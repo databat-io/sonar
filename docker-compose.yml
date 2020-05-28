@@ -4,6 +4,7 @@ volumes:
 services:
   celery:
     build: ./app
+    dockerfile: Dockerfile-celery
     expose:
       - "80"
     depends_on:
