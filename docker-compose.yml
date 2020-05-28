@@ -10,7 +10,11 @@ services:
       - redis
     volumes:
       - 'resin-data:/data'
-  redis:
+    labels:
+      io.balena.features.kernel-modules: '1'
+      io.balena.features.firmware: '1'
+      io.balena.features.sysfs: '1'
+      io.balena.features.procfs: '1'
     build: ./redis
     volumes:
       - 'resin-data:/data'
