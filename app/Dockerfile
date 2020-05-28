@@ -1,6 +1,6 @@
 FROM balenalib/raspberrypi3-python
 
-RUN install_packages build-essential bluez bluez-firmware dnsmasq pwgen python-numpy python-smbus
+RUN install_packages build-essential bluez bluez-firmware dnsmasq pwgen python-dev python-numpy python-smbus
 
 # Set our working directory
 WORKDIR /usr/src/app
