@@ -24,23 +24,12 @@ RUN pip install -r /requirements.txt --no-cache-dir
 RUN cd /usr/local/lib/python2.7/site-packages/bluepy && \
     make
 
-# Install Redis
-ARG REDIS_VERSION=4.0.6
-RUN \
-    wget -q -O /tmp/redis.tgz http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz && \
-    tar xfz /tmp/redis.tgz -C /tmp && \
-    cd /tmp/redis-${REDIS_VERSION} && \
-    make && \
-    make install && \
-    cd && rm -rf /tmp/redis*
-COPY configs/redis.conf /etc
-
 COPY systemd/*.service /etc/systemd/system/
 RUN systemctl enable redis.service && \
     systemctl enable gunicorn.service
 
 # Copy in actual code base
-COPY app /usr/src/app/
+COPY django /usr/src/app/
 COPY start.sh /
 
 # switch on systemd init system in container
