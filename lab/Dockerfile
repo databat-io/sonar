@@ -4,6 +4,7 @@ ENV DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
 ENV UDEV=1
 
 RUN install_packages \
+  build-essential \
   bluez \
   python-dbus \
   python-dev \
