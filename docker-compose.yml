@@ -6,6 +6,7 @@ services:
     build: ./app
     depends_on:
       - redis
+    restart: on-failure
     volumes:
       - 'resin-data:/data'
     environment:
@@ -18,17 +19,19 @@ services:
       io.balena.features.firmware: "1"
   gunicorn:
     build: ./app
+    restart: on-failure
     ports:
       - "80:80"
     depends_on:
       - redis
     volumes:
       - 'resin-data:/data'
+    restart: on-failure
     environment:
       GUNICORN: 1
   redis:
     build: ./redis
     ports:
-      - "127.0.0.1:4379:4379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - 'resin-data:/data'
