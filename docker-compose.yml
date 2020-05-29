@@ -11,7 +11,7 @@ services:
     environment:
       CELERY: 1
     privileged: true
-    #network_mode: host
+    network_mode: host
     labels:
       io.balena.features.dbus: "1"
       io.balena.features.kernel-modules: "1"
