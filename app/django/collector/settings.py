@@ -39,7 +39,7 @@ SECRET_KEY = os.getenv(
 DEBUG = os.getenv('DEBUG', False)
 
 DEV_MODE = string_to_bool(os.getenv('DEV_MODE', False))
-RESIN = os.getenv('RESIN_DEVICE_UUID', False)
+BALENA = os.getenv('BALENA_DEVICE_UUID', False)
 
 
 ALLOWED_HOSTS = []
@@ -51,7 +51,6 @@ if DEV_MODE:
     ALLOWED_HOSTS += ['*']
 
 ALLOWED_HOSTS += ['.resindevice.io', '.balena-devices.com']
-
 
 # Application definition
 
@@ -124,11 +123,11 @@ DEVICE_IGNORE_THRESHOLD = int(os.getenv('DEVICE_IGNORE_THRESHOLD', 5000))
 
 def GET_DEVICE_ID():
     """
-    Return the device id. Use Resin device ID if available.
+    Return the device id. Use Balena device ID if available.
     """
 
-    if os.getenv('RESIN_DEVICE_UUID', False):
-        return os.getenv('RESIN_DEVICE_UUID')
+    if os.getenv('BALENA_DEVICE_UUID', False):
+        return os.getenv('BALENA_DEVICE_UUID')
 
     device_id_file = os.path.join(DATABASE_PATH, 'device_id')
     if not os.path.isfile(device_id_file):
