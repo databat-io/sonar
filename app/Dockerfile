@@ -6,10 +6,7 @@ RUN install_packages \
     build-essential \
     dnsmasq \
     pwgen \
-    python-dbus \
     python-dev \
-    python-gobject \
-    python-gpiozero \
     python-numpy \
     python-smbus \
     libglib2.0-dev

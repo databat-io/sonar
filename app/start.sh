@@ -20,14 +20,18 @@ if [ "$GUNICORN" = "1" ]; then
 elif [ "$CELERY" = "1" ]; then
     export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
     export UDEV=1
+
+    # Enable Bluetooth module
     printf "power on\ndiscoverable off\npairable off\nexit\n" | bluetoothctl
 
-    /usr/local/bin/celery \
-        -A collector \
-        worker \
-        -l info \
-        --concurrency=2 \
-        --beat
+    blescan
+    sleep 3600
+    #/usr/local/bin/celery \
+    #    -A collector \
+    #    worker \
+    #    -l info \
+    #    --concurrency=2 \
+    #    --beat
 else
     echo "Unknown runtime."
 fi
