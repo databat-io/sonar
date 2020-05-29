@@ -1,0 +1,37 @@
+version: '2'
+volumes:
+  resin-data:
+services:
+  celery:
+    build: ./app
+    depends_on:
+      - redis
+    restart: on-failure
+    volumes:
+      - 'resin-data:/data'
+    environment:
+      CELERY: 1
+    privileged: true
+    network_mode: host
+    labels:
+      io.balena.features.dbus: "1"
+      io.balena.features.kernel-modules: "1"
+      io.balena.features.firmware: "1"
+  gunicorn:
+    build: ./app
+    restart: on-failure
+    ports:
+      - "80:80"
+    depends_on:
+      - redis
+    volumes:
+      - 'resin-data:/data'
+    environment:
+      GUNICORN: 1
+  redis:
+    build: ./redis
+    restart: on-failure
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - 'resin-data:/data'

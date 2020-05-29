@@ -39,7 +39,7 @@ SECRET_KEY = os.getenv(
 DEBUG = os.getenv('DEBUG', False)
 
 DEV_MODE = string_to_bool(os.getenv('DEV_MODE', False))
-RESIN = os.getenv('RESIN_DEVICE_UUID', False)
+BALENA = os.getenv('BALENA_DEVICE_UUID', False)
 
 
 ALLOWED_HOSTS = []
@@ -51,7 +51,6 @@ if DEV_MODE:
     ALLOWED_HOSTS += ['*']
 
 ALLOWED_HOSTS += ['.resindevice.io', '.balena-devices.com']
-
 
 # Application definition
 
@@ -124,11 +123,11 @@ DEVICE_IGNORE_THRESHOLD = int(os.getenv('DEVICE_IGNORE_THRESHOLD', 5000))
 
 def GET_DEVICE_ID():
     """
-    Return the device id. Use Resin device ID if available.
+    Return the device id. Use Balena device ID if available.
     """
 
-    if os.getenv('RESIN_DEVICE_UUID', False):
-        return os.getenv('RESIN_DEVICE_UUID')
+    if os.getenv('BALENA_DEVICE_UUID', False):
+        return os.getenv('BALENA_DEVICE_UUID')
 
     device_id_file = os.path.join(DATABASE_PATH, 'device_id')
     if not os.path.isfile(device_id_file):
@@ -180,7 +179,13 @@ MIXPANEL_TOKEN = 'bdf69de60cd0602dd2fd760df66b5cc7'
 
 DEV_MODE = os.getenv('DEV_MODE', False)
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
+# The celery container runs in "network_mode: host", so it needs
+# different routing to redis
+if os.getenv('CELERY') == '1':
+    CELERY_BROKER_URL = 'redis://localhost:6379/0'
+else:
+    CELERY_BROKER_URL = 'redis://redis:6379/0'
+
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'

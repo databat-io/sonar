@@ -21,26 +21,26 @@
         {% endblock page_specific_scripts %}
     </head>
     <body>
-        
+
         {% block main-wrapper %}
         <div class="main-wrapper">
             <div class="app sidebar-fixed" id="app">
-                
+
                 <!-- Template navigation content begins -->
                 {% include 'analytics/includes/sidebar.html' %}
-                <!-- Template navigation content ends -->                                
-                
+                <!-- Template navigation content ends -->
+
                 <!-- Template page content begins -->
                 <article class="content {% block content_class %}dashboard-page{% endblock content_class %}">
                     {% block body %}
                     {% endblock body %}
                 </article>
                 <!-- End of template page content -->
-                
+
                 <!-- Template footer content begins -->
                 {% include 'analytics/includes/footer.html' %}
-                <!-- Template footer content ends -->                
-                
+                <!-- Template footer content ends -->
+
             </div>
         </div>
         {% endblock main-wrapper %}

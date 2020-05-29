@@ -41,6 +41,7 @@ $ git push balena master
 
 Once the build is done, the device will automatically pull down the image and start running.
 
+
 ### Raspbian
 
 In order to run Sonar, you need to have Docker installed.
@@ -59,6 +60,14 @@ $ sudo apt-get purge bluez
 ```
 TODO: Complete.
 
+
+### Configuration
+
+The following environment variables can be used to modify the behavior:
+
+* 'ALLOWED_HOSTS': By default the publicly exposed URL for Balena is already allowed. You can use this to add an additional hostname/IP that the devcice is reachable from.
+* 'DEBUG': Set this to enable debug mode.
+* 'DJANGO_SECRET': Set this to a random string. You can use something like [djecrety.ir/](https://djecrety.ir), or generate it by hand.
 
 ### Building the docker image
 
