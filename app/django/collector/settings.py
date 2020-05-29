@@ -183,7 +183,7 @@ DEV_MODE = os.getenv('DEV_MODE', False)
 # The celery container runs in "network_mode: host", so it needs
 # different routing to redis
 if os.getenv('CELERY') == '1':
-    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+    CELERY_BROKER_URL = 'redis://localhost:6379/0'
 else:
     CELERY_BROKER_URL = 'redis://redis:6379/0'
 

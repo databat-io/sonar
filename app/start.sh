@@ -24,14 +24,12 @@ elif [ "$CELERY" = "1" ]; then
     # Enable Bluetooth module
     printf "power on\ndiscoverable off\npairable off\nexit\n" | bluetoothctl
 
-    blescan
-    sleep 3600
-    #/usr/local/bin/celery \
-    #    -A collector \
-    #    worker \
-    #    -l info \
-    #    --concurrency=2 \
-    #    --beat
+    /usr/local/bin/celery \
+        -A collector \
+        worker \
+        -l info \
+        --concurrency=2 \
+        --beat
 else
     echo "Unknown runtime."
 fi
