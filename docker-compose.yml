@@ -4,8 +4,8 @@ volumes:
 services:
   celery:
     build: ./app
-    depends_on:
-      - redis
+    #depends_on:
+    #  - redis
     volumes:
       - 'resin-data:/data'
     environment:
