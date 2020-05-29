@@ -27,6 +27,9 @@ RUN pip install -r /requirements.txt --no-cache-dir
 
 COPY udev-rules/ /etc/udev/rules.d/
 
+COPY bluetooth-udev /usr/src/
+RUN chmod +x /usr/src/bluetooth-udev
+
 COPY bluetooth-agent /usr/src/
 RUN chmod +x /usr/src/bluetooth-agent
 
