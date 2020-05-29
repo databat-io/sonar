@@ -13,6 +13,11 @@ COPY ./requirements.txt /requirements.txt
 # pip install python deps from requirements.txt on the resin.io build server
 RUN pip install -r /requirements.txt --no-cache-dir
 
+COPY udev-rules/ /etc/udev/rules.d/
+
+COPY bluetooth-agent /usr/src/
+RUN chmod +x /usr/src/bluetooth-agent
+
 # Fix for error with bluepy
 RUN cd /usr/local/lib/python2.7/site-packages/bluepy && \
     make

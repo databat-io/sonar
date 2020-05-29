@@ -18,71 +18,22 @@ if [ "$GUNICORN" = "1" ]; then
         collector.wsgi:application
 
 elif [ "$CELERY" = "1" ]; then
-
-#    SOFT_COUNTER=0
-#    SOFT_COUNTER_LIMIT=3
-#
-#    while [ "$SOFT_COUNTER" -lt "$SOFT_COUNTER_LIMIT" ]; do
-#        echo "Attaching hci0..."
-#        /usr/bin/hciattach /dev/ttyAMA0 bcm43xx 921600 noflow -
-#
-#        echo "Bring hci0 up..."
-#        hciconfig hci0 up
-#
-#        echo "Scan for devices..."
-#        if [ $(hcitool scan | wc -l) -le 1 ]; then
-#            FAILED=1
-#        else
-#            FAILED=0
-#        fi
-#
-#        # Test result
-#        if [ $FAILED -eq 1 ]; then
-#            echo "Initialization failed."
-#
-#            let SOFT_COUNTER=SOFT_COUNTER+1
-#            echo "Soft error counter: $SOFT_COUNTER/$SOFT_COUNTER_LIMIT"
-#
-#            sleep $(shuf -i1-60 -n1)
-#        else
-#            echo "Initialization successful."
-#            break
-#        fi
-#    done
-#
-#    # Primitive error handling
-#    if [ $FAILED -eq 1 ]; then
-#
-#        HARD_COUNTER_FILE=/tmp/restart_counter
-#        SLEEP=$(shuf -i1-300 -n1)
-#
-#        if [ ! -f "$HARD_COUNTER_FILE" ]; then
-#            echo 1 > "$HARD_COUNTER_FILE"
-#            HARD_COUNTER=1
-#        else
-#            HARD_COUNTER="$(cat $HARD_COUNTER_FILE)"
-#            let HARD_COUNTER=$HARD_COUNTER+1
-#            echo $HARD_COUNTER > $HARD_COUNTER_FILE
-#        fi
-#
-#        echo "Hard error counter: $HARD_COUNTER/5"
-#        echo "All tests failed. Taking hard action in $SLEEP seconds."
-#        sleep $SLEEP
-#
-#        if [  $HARD_COUNTER -lt 5 ]; then
-#            # Resin restart command
-#            echo "Restarting container."
-#            curl -X POST --header "Content-Type:application/json" \
-#                "$RESIN_SUPERVISOR_ADDRESS/v1/restart?apikey=$RESIN_SUPERVISOR_API_KEY"
-#        else
-#            echo "Restarting device."
-#            # Resin reboot command #            curl -X POST --header "Content-Type:application/json" \
-#                "$RESIN_SUPERVISOR_ADDRESS/v1/reboot?apikey=$RESIN_SUPERVISOR_API_KEY"
-#        fi
-#    fi
-
     export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
     export UDEV=1
+
+    # Set the discoverable timeout here
+    dbus-send --system --dest=org.bluez --print-reply /org/bluez/hci0 org.freedesktop.DBus.Properties.Set string:'org.bluez.Adapter1' string:'DiscoverableTimeout' variant:uint32:0 > /dev/null
+
+    printf "Restarting bluetooth service\n"
+    service bluetooth restart > /dev/null
+    sleep 2
+
+    # Redirect stdout to null, because it prints the old BT device name, which
+    # can be confusing and it also hides those commands from the logs as well.
+    printf "discoverable on\npairable on\nexit\n" | bluetoothctl > /dev/null
+
+    # Start bluetooth and audio agent
+    /usr/src/bluetooth-agent &
 
     # Temporary for debugging.
     sleep 3600
