@@ -22,11 +22,6 @@ elif [ "$CELERY" = "1" ]; then
     export UDEV=1
     printf "power on\ndiscoverable off\npairable off\nexit\n" | bluetoothctl
 
-    blescan
-
-    # Temporary for debugging.
-    sleep 3600
-
     /usr/local/bin/celery \
         -A collector \
         worker \

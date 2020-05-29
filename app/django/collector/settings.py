@@ -180,7 +180,13 @@ MIXPANEL_TOKEN = 'bdf69de60cd0602dd2fd760df66b5cc7'
 
 DEV_MODE = os.getenv('DEV_MODE', False)
 
-CELERY_BROKER_URL = 'redis://redis:6379/0'
+# The celery container runs in "network_mode: host", so it needs
+# different routing to redis
+if os.getenv('CELERY') == '1':
+    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+else:
+    CELERY_BROKER_URL = 'redis://redis:6379/0'
+
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
