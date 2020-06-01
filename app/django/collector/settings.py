@@ -36,11 +36,11 @@ SECRET_KEY = os.getenv(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', False)
+DEBUG = string_to_bool(os.getenv('DEBUG', False))
 
 DEV_MODE = string_to_bool(os.getenv('DEV_MODE', False))
 BALENA = os.getenv('BALENA_DEVICE_UUID', False)
-
+DISABLE_ANALYTICS = string_to_bool(os.getenv('DISABLE_ANALYTICS', False))
 
 ALLOWED_HOSTS = []
 
@@ -102,21 +102,30 @@ WSGI_APPLICATION = 'collector.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
+DATABASE_PATH = '/data/collector'
 
-if not DEV_MODE:
-    DATABASE_PATH = '/data/collector'
-else:
-    DATABASE_PATH = BASE_DIR
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(DATABASE_PATH, 'db.sqlite3'),
-        'OPTIONS': {
-            'timeout': 60,  # in seconds
+if string_to_bool(os.getenv('USE_POSTGRES', False)):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.getenv('POSTGRES_DATABASE', 'sonar'),
+            'USER': os.getenv('POSTGRES_USER', 'sonar'),
+            'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+            'HOST': os.getenv('POSTGRES_HOST', 'postgres'),
+            'PORT': int(os.getenv('POSTGRES_PORT', '5432')),
         }
     }
-}
+else:
+
+    DATABASES = { 'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(DATABASE_PATH, 'db.sqlite3'),
+            'OPTIONS': {
+                'timeout': 60,  # in seconds
+            }
+        }
+    }
+
 
 DEVICE_IGNORE_THRESHOLD = int(os.getenv('DEVICE_IGNORE_THRESHOLD', 5000))
 
@@ -125,6 +134,9 @@ def GET_DEVICE_ID():
     """
     Return the device id. Use Balena device ID if available.
     """
+
+    if string_to_bool(os.getenv('DEV_MODE', False)):
+        return
 
     if os.getenv('BALENA_DEVICE_UUID', False):
         return os.getenv('BALENA_DEVICE_UUID')

@@ -26,5 +26,10 @@ def populate_device(device):
 
 @task
 def scan(timeout=30):
-    for device in ble_helper.scan_for_btle_devices(timeout=timeout):
-        populate_device(device)
+    perform_scan = ble_helper.scan_for_btle_devices(timeout=timeout)
+
+    if perform_scan:
+        for device in ble_helper.scan_for_btle_devices(timeout=timeout):
+            populate_device(device)
+    else:
+        print("Unable to scan for devices.")

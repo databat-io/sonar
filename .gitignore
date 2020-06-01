@@ -1,8 +1,8 @@
 *.pyc
-app/datadump*
 app/db.sqlite3
 venv
 .idea/
-
+datadump*
 app/staticfiles/*
-!app/staticfiles/README.md
+app/django/staticfiles
+app/django/celerybeat-schedule

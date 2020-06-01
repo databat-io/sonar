@@ -72,6 +72,10 @@ def ble_generate_daily_report(date=None):
         print('Report already exist.')
         return
 
+    if not BleReport.objects.filter(period__startswith=date, report_type='H').first():
+        print('No hourly report for period. Exiting.')
+        return
+
     tz = timezone.now().tzname()
     datetime_obj = datetime.strptime(date, '%Y-%m-%d')
     datetime_obj_local = datetime_obj.replace(tzinfo=pytz.timezone(tz))
@@ -109,6 +113,10 @@ def ble_generate_monthly_report(date=None):
         print('Report already exist.')
         return
 
+    if not BleReport.objects.filter(period__startswith=date, report_type='D').first():
+        print('No daily report for period. Exiting.')
+        return
+
     tz = timezone.now().tzname()
     datetime_obj = datetime.strptime(date, '%Y-%m')
     datetime_obj_local = datetime_obj.replace(tzinfo=pytz.timezone(tz))
@@ -140,6 +148,9 @@ def ble_fill_report_backlog(report_type):
     else:
         return 'No report type selected'
 
+    if settings.DISABLE_ANALYTICS:
+        return
+
     tz = timezone.now().tzname()
     oldest_scan_record = ScanRecord.objects.filter().order_by(
         'timestamp'
@@ -169,5 +180,5 @@ def ble_fill_report_backlog(report_type):
             if not BleReport.objects.filter(period=period):
                 return ble_generate_monthly_report(date=period)
             else:
-                record_to_check = record_to_check + timedelta(months=1)
+                record_to_check = record_to_check + timedelta(days=30)
     return 'No more records to populate.'

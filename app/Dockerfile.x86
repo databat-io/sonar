@@ -1,14 +1,14 @@
-FROM balenalib/raspberrypi3-python
+FROM debian:buster
 
-RUN install_packages \
+RUN apt-get update && apt-get install --no-install-recommends -y \
     bluez \
-    bluez-firmware \
     build-essential \
+    libpq-dev \
     dnsmasq \
     pwgen \
-    libpq-dev \
     python-dev \
     python-numpy \
+    python-pip \
     python-smbus \
     libglib2.0-dev
 
@@ -17,6 +17,7 @@ WORKDIR /usr/src/app
 
 # Upgrade pip
 RUN pip install --upgrade pip
+RUN pip install setuptools
 
 COPY ./requirements.txt /requirements.txt
 
@@ -24,8 +25,8 @@ COPY ./requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt --no-cache-dir
 
 # Fix for error with bluepy
-RUN cd /usr/local/lib/python2.7/site-packages/bluepy && \
-    make
+#RUN cd /usr/local/lib/python2.7/site-packages/bluepy && \
+#    make
 
 # Copy in actual code base
 COPY django /usr/src/app/

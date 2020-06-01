@@ -1,4 +1,4 @@
-from bluepy.btle import Scanner, DefaultDelegate
+from bluepy.btle import Scanner, DefaultDelegate, BTLEManagementError
 
 
 def scan_for_btle_devices(timeout=30):
@@ -7,4 +7,8 @@ def scan_for_btle_devices(timeout=30):
             DefaultDelegate.__init__(self)
 
     scanner = Scanner().withDelegate(ScanDelegate())
-    return scanner.scan(float(timeout))
+    try:
+        get_scan_result = scanner.scan(float(timeout))
+        return get_scan_result
+    except BTLEManagementError:
+        return

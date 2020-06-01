@@ -18,11 +18,15 @@ if [ "$GUNICORN" = "1" ]; then
         collector.wsgi:application
 
 elif [ "$CELERY" = "1" ]; then
-    export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
-    export UDEV=1
+    if [ "$DEV_MODE" = "1" ]; then
+        echo "Running in development mode. Not initiating Bluetooth."
+    else
+        export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
+        export UDEV=1
 
-    # Enable Bluetooth module
-    printf "power on\ndiscoverable off\npairable off\nexit\n" | bluetoothctl
+        # Enable Bluetooth module
+        printf "power on\ndiscoverable off\npairable off\nexit\n" | bluetoothctl
+    fi
 
     /usr/local/bin/celery \
         -A collector \

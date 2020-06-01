@@ -65,9 +65,20 @@ TODO: Complete.
 
 The following environment variables can be used to modify the behavior:
 
-* 'ALLOWED_HOSTS': By default the publicly exposed URL for Balena is already allowed. You can use this to add an additional hostname/IP that the devcice is reachable from.
-* 'DEBUG': Set this to enable debug mode.
-* 'DJANGO_SECRET': Set this to a random string. You can use something like [djecrety.ir/](https://djecrety.ir), or generate it by hand.
+
+| Environment Variable | Default Value | Description                                                                                                                                             |
+| -------------        | ------------  | -----                                                                                                                                                   |
+| ALLOWED_HOSTS        |               | By default the publicly exposed URL for Balena is already allowed. You can use this to add an additional hostname/IP that the devcice is reachable from |
+| DEBUG                | 0             | Set to '1' to enable debug mode.                                                                                                                        |
+| DEV_MODE             | 0             | Set to '1' enable development mode.                                                                                                                     |
+| DJANGO_SECRET        |               | Set this to a random string. You can use something like [djecrety.ir/](https://djecrety.ir), or generate it by hand.                                    |
+| USE_POSTGRES         | 0             | Set to '1' to use PostgreSQL as the database.                                                                                                           |
+| DISABLE_ANALYTICS    | 0             | Set to '1' to disable processing of analytics.                                                                                                          |
+| POSTGRES_USER        |               | Set the PostgreSQL username.                                                                                                                            |
+| POSTGRES_PASSWORD    |               | Set the PostgreSQL password.                                                                                                                            |
+| POSTGRES_DATABASE    |               | Set the PostgreSQL database.                                                                                                                            |
+| POSTGRES_HOST        |               | Set the PostgreSQL hostname.                                                                                                                            |
+
 
 ### Building the docker image
 
@@ -83,13 +94,13 @@ $ ./bin/build_image.sh
 It's possible to run the application in dev mode (without data collection). To do this, you need `docker` and `docker-compose`. With this installed, you can run:
 
 ```
-$ docker-compose up
+$ docker-compose -f docker-compose-dev.yml up
 ```
 
 Next, you need to create an admin user:
 
 ```
-$ docker exec -ti sonar_runserver_1 python manage.py createsuperuser
+$ docker exec -ti sonar_gunicorn_1 python manage.py createsuperuser
 ```
 
 Finally, you should be able to access the web interface at [localhost:8000](http://localhost:8000).
@@ -113,7 +124,6 @@ Once you have the files available locally, you can use the following command to 
 ```
 $ python manage.py loaddata datadump.json
 ```
-
 
 ## FAQ
 
