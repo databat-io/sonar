@@ -15,7 +15,7 @@ def set_lock(timeout):
         return False
     else:
         r.set(LOCK_NAME, 1)
-        r.expire(timeout)
+        r.expire(LOCK_NAME, timeout)
         return True
 
 def delete_lock():
