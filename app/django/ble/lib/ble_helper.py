@@ -30,7 +30,7 @@ def scan_for_btle_devices(timeout=30):
     try:
         if set_lock(timeout+5):
             scanner = Scanner().withDelegate(ScanDelegate())
-            scan_result = scanner.scan(float(timeout))
+            scan_result = scanner.scan(float(timeout), passive=True)
             delete_lock()
             return(scan_result)
         else:
