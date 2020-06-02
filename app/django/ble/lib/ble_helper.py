@@ -14,11 +14,13 @@ def scan_for_btle_devices(timeout=30):
         def __init__(self):
             DefaultDelegate.__init__(self)
 
-    scanner = Scanner().withDelegate(ScanDelegate())
-
     try:
-        with r.lock('ble-scan-lock', blocking_timeout=timeout+2) as lock:
-            return(scanner.scan(float(timeout)))
+        with r.lock('ble-scan-lock', blocking_timeout=timeout+5) as lock:
+            scanner = Scanner().withDelegate(ScanDelegate())
+            print('got here')
+            scan_result = scanner.scan(float(timeout))
+            print('got here too')
+            return(scan_result)
     except redis.exceptions.LockError:
         print("Failed to acquire lock")
         return
