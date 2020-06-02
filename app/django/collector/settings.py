@@ -211,16 +211,18 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
-CELERY_IMPORTS = ['ble.tasks', 'analytics.tasks']
+CELERY_IMPORTS = []
 CELERY_BEAT_SCHEDULE = {}
 
 if not DISABLE_SCANNING:
+    CELERY_IMPORTS.append('ble.tasks')
     CELERY_BEAT_SCHEDULE['ble-scan'] = {
         'task': 'ble.tasks.scan',
         'schedule': 60.0,
     }
 
 if not DISABLE_ANALYTICS:
+    CELERY_IMPORTS.append('analytics.tasks')
     CELERY_BEAT_SCHEDULE['generate-hourly-report'] = {
         'task': 'analytics.tasks.ble_generate_hourly_report',
         'schedule': crontab(minute=10),
