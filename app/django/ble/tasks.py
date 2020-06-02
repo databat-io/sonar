@@ -26,7 +26,11 @@ def populate_device(device):
 
 @task
 def scan(timeout=30):
-    r = redis.Redis(settings.CELERY_BROKER_URL)
+    r = redis.Redis(
+        host=settings.REDIS_HOST,
+        port=settings.REDIS_PORT,
+        db=SETTINGS.REDIS_DATABASE
+    )
     try:
         with r.lock('ble-scan-lock', blocking_timeout=45) as lock:
             perform_scan = ble_helper.scan_for_btle_devices(timeout=timeout)

@@ -195,9 +195,17 @@ DEV_MODE = os.getenv('DEV_MODE', False)
 # The celery container runs in "network_mode: host", so it needs
 # different routing to redis
 if os.getenv('CELERY') == '1':
-    CELERY_BROKER_URL = 'redis://localhost:6379/0'
+    REDIS_HOST = 'localhost'
 else:
-    CELERY_BROKER_URL = 'redis://redis:6379/0'
+    REDIS_HOST = 'redis'
+REDIS_PORT = 6379
+REDIS_DATABASE = 0
+
+CELERY_BROKER_URL = 'redis://{}:{}/{}'.format(
+    REDIS_HOST,
+    str(REDIS_PORT),
+    str(REDIS_DATABASE)
+)
 
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
