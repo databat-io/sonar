@@ -72,8 +72,9 @@ The following environment variables can be used to modify the behavior:
 | DEBUG                | 0             | Set to '1' to enable debug mode.                                                                                                                        |
 | DEV_MODE             | 0             | Set to '1' enable development mode.                                                                                                                     |
 | DJANGO_SECRET        |               | Set this to a random string. You can use something like [djecrety.ir/](https://djecrety.ir), or generate it by hand.                                    |
-| USE_POSTGRES         | 0             | Set to '1' to use PostgreSQL as the database.                                                                                                           |
 | DISABLE_ANALYTICS    | 0             | Set to '1' to disable processing of analytics.                                                                                                          |
+| DISABLE_SCANNING     | 0             | Set to '1' to disable BLE scanning (useful for processing node).                                                                                        |
+| USE_POSTGRES         | 0             | Set to '1' to use PostgreSQL as the database.                                                                                                           |
 | POSTGRES_USER        |               | Set the PostgreSQL username.                                                                                                                            |
 | POSTGRES_PASSWORD    |               | Set the PostgreSQL password.                                                                                                                            |
 | POSTGRES_DATABASE    |               | Set the PostgreSQL database.                                                                                                                            |

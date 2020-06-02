@@ -41,6 +41,7 @@ DEBUG = string_to_bool(os.getenv('DEBUG', False))
 DEV_MODE = string_to_bool(os.getenv('DEV_MODE', False))
 BALENA = os.getenv('BALENA_DEVICE_UUID', False)
 DISABLE_ANALYTICS = string_to_bool(os.getenv('DISABLE_ANALYTICS', False))
+DISABLE_SCANNING = string_to_bool(os.getenv('DISABLE_SCANNING', False))
 
 ALLOWED_HOSTS = []
 
@@ -203,39 +204,47 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 CELERY_IMPORTS = ['ble.tasks', 'analytics.tasks']
-CELERY_BEAT_SCHEDULE = {
-    'ble-scan': {
+CELERY_BEAT_SCHEDULE = {}
+
+if not DISABLE_SCANNING:
+    CELERY_BEAT_SCHEDULE['ble-scan'] = {
         'task': 'ble.tasks.scan',
         'schedule': 60.0,
-    },
-    'generate-hourly-report': {
+    }
+
+if not DISABLE_ANALYTICS:
+    CELERY_BEAT_SCHEDULE['generate-hourly-report'] = {
         'task': 'analytics.tasks.ble_generate_hourly_report',
         'schedule': crontab(minute=10),
-    },
-    'generate-hourly-report-backlog': {
+    }
+
+    CELERY_BEAT_SCHEDULE['generate-hourly-report-backlog'] = {
         'task': 'analytics.tasks.ble_fill_report_backlog',
         'schedule': crontab(minute='*/10'),
         'args': ('H',)
-    },
-    'generate-daily-report': {
+    }
+
+    CELERY_BEAT_SCHEDULE['generate-daily-report'] = {
         'task': 'analytics.tasks.ble_generate_daily_report',
         'schedule': crontab(minute=5, hour=0),
-    },
-    'generate-daily-report-backlog': {
+    }
+
+    CELERY_BEAT_SCHEDULE['generate-daily-report-backlog'] = {
         'task': 'analytics.tasks.ble_fill_report_backlog',
         'schedule': crontab(minute='15'),
         'args': ('D',)
-    },
-    'generate-monthly-report': {
+    }
+
+    CELERY_BEAT_SCHEDULE['generate-monthly-report'] = {
         'task': 'analytics.tasks.ble_generate_monthly_report',
         'schedule': crontab(minute=1, hour=3, day_of_month=1),
-    },
-    'generate-monthly-report-backlog': {
+    }
+
+    CELERY_BEAT_SCHEDULE['generate-monthly-report-backlog'] = {
         'task': 'analytics.tasks.ble_fill_report_backlog',
         'schedule': crontab(minute='25'),
         'args': ('M',)
-    },
-}
+    }
 
 
 # Static files (CSS, JavaScript, Images)
