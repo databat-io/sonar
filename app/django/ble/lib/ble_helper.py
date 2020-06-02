@@ -11,4 +11,5 @@ def scan_for_btle_devices(timeout=30):
         get_scan_result = scanner.scan(float(timeout))
         return get_scan_result
     except BTLEManagementError as e:
-        return(e)
+        print("Got error: ".format(e))
+        return
