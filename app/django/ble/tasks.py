@@ -35,11 +35,11 @@ def scan(timeout=30):
         with r.lock('ble-scan-lock', blocking_timeout=45) as lock:
             perform_scan = ble_helper.scan_for_btle_devices(timeout=timeout)
     except redis.exceptions.LockError:
-        print("Failed to acquire lock")
-        return
+        return("Failed to acquire lock")
 
     if perform_scan:
         for device in ble_helper.scan_for_btle_devices(timeout=timeout):
             populate_device(device)
+        return("Successfully scanned.")
     else:
-        print("Unable to scan for devices.")
+        return("Unable to scan for devices.")
