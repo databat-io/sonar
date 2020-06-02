@@ -29,7 +29,7 @@ def scan(timeout=30):
     r = redis.Redis(
         host=settings.REDIS_HOST,
         port=settings.REDIS_PORT,
-        db=SETTINGS.REDIS_DATABASE
+        db=settings.REDIS_DATABASE
     )
     try:
         with r.lock('ble-scan-lock', blocking_timeout=45) as lock:
