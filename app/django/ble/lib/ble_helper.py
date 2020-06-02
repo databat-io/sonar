@@ -30,13 +30,11 @@ def scan_for_btle_devices(timeout=30):
     try:
         if set_lock(timeout+5):
             scanner = Scanner().withDelegate(ScanDelegate())
-            print('got here')
             scan_result = scanner.scan(float(timeout))
-            print('got here too')
             delete_lock()
             return(scan_result)
         else:
-            print("Failed to acquire lock")
+            print("Failed to acquire lock.")
             return
     except BTLEManagementError:
         print("Got BTLEManagementError. This is probably due to two parallel sessions.")
