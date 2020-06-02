@@ -4,7 +4,6 @@ from ble.models import Device
 from celery import task
 from django.conf import settings
 from django.utils import timezone
-import redis
 
 def populate_device(device):
 
@@ -26,17 +25,7 @@ def populate_device(device):
 
 @task
 def scan(timeout=30):
-    r = redis.Redis(
-        host=settings.REDIS_HOST,
-        port=settings.REDIS_PORT,
-        db=settings.REDIS_DATABASE
-    )
-    try:
-        with r.lock('ble-scan-lock', blocking_timeout=45) as lock:
-            perform_scan = ble_helper.scan_for_btle_devices(timeout=timeout)
-    except redis.exceptions.LockError:
-        return("Failed to acquire lock")
-
+    perform_scan = ble_helper.scan_for_btle_devices(timeout=timeout)
     if perform_scan:
         for device in ble_helper.scan_for_btle_devices(timeout=timeout):
             populate_device(device)
