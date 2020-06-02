@@ -218,7 +218,7 @@ if not DISABLE_SCANNING:
     CELERY_IMPORTS.append('ble.tasks')
     CELERY_BEAT_SCHEDULE['ble-scan'] = {
         'task': 'ble.tasks.scan',
-        'schedule': 60.0,
+        'schedule': crontab(minute='*/5'),
     }
 
 if not DISABLE_ANALYTICS:
