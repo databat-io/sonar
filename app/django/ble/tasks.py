@@ -2,9 +2,10 @@ from __future__ import absolute_import, unicode_literals
 from ble.lib import ble_helper
 from ble.models import Device
 from celery import task
-import requests
 from django.conf import settings
 from django.utils import timezone
+import requests
+import redis
 
 r = redis.Redis(
         host=settings.REDIS_HOST,
