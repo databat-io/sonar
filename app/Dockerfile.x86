@@ -4,8 +4,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     bluez \
     build-essential \
     libpq-dev \
-    dnsmasq \
-    pwgen \
     python-dev \
     python-numpy \
     python-pip \

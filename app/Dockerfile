@@ -4,8 +4,6 @@ RUN install_packages \
     bluez \
     bluez-firmware \
     build-essential \
-    dnsmasq \
-    pwgen \
     libpq-dev \
     python-dev \
     python-numpy \
