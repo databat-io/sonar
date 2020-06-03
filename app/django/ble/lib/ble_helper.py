@@ -2,7 +2,7 @@ from bluepy.btle import Scanner, DefaultDelegate, BTLEManagementError
 from django.conf import settings
 import redis
 
-LOCK_NAME = 'ble-lock'
+LOCK_NAME = 'btle-lock'
 r = redis.Redis(
     host=settings.REDIS_HOST,
     port=settings.REDIS_PORT,
@@ -18,8 +18,21 @@ def set_lock(timeout):
         r.expire(LOCK_NAME, timeout)
         return True
 
+
 def delete_lock():
     r.delete(LOCK_NAME)
+
+
+def log_btle_error():
+    btle_error_key = 'btle-error'
+    btle_error_key_ttl = 3600
+
+    if r.get(btle_error_key):
+        r.incr(btle_error_key)
+        r.expire(btle_error_key, btle_error_key_ttl)
+    else:
+        r.set(btle_error_key, 1)
+        r.expire(btle_error_key, btle_error_key_ttl)
 
 
 def scan_for_btle_devices(timeout=30):
@@ -34,8 +47,9 @@ def scan_for_btle_devices(timeout=30):
             delete_lock()
             return(scan_result)
         else:
-            print("Failed to acquire lock.")
+            print('Failed to acquire lock.')
             return
     except BTLEManagementError:
-        print("Got BTLEManagementError. This is probably due to two parallel sessions.")
+        log_btle_error()
+        print('Got BTLEManagementError. Failure counter at {}.'.format(r.get('btle-error')))
         return

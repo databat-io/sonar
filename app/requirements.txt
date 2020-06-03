@@ -8,4 +8,5 @@ mixpanel==4.3.2
 psycopg2==2.8.5
 pytz==2020.1
 redis==3.5.2
+requests==2.23.0
 whitenoise==3.3.1

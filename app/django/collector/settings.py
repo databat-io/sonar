@@ -40,6 +40,9 @@ DEBUG = string_to_bool(os.getenv('DEBUG', False))
 
 DEV_MODE = string_to_bool(os.getenv('DEV_MODE', False))
 BALENA = os.getenv('BALENA_DEVICE_UUID', False)
+BALENA_SUPERVISOR_ADDRESS = os.getenv('BALENA_SUPERVISOR_ADDRESS')
+BALENA_SUPERVISOR_API_KEY = os.getenv('BALENA_SUPERVISOR_API_KEY')
+
 DISABLE_ANALYTICS = string_to_bool(os.getenv('DISABLE_ANALYTICS', False))
 DISABLE_SCANNING = string_to_bool(os.getenv('DISABLE_SCANNING', False))
 
