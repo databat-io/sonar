@@ -46,6 +46,8 @@ BALENA_SUPERVISOR_API_KEY = os.getenv('BALENA_SUPERVISOR_API_KEY')
 DISABLE_ANALYTICS = string_to_bool(os.getenv('DISABLE_ANALYTICS', False))
 DISABLE_SCANNING = string_to_bool(os.getenv('DISABLE_SCANNING', False))
 
+RETENTION_PERIOD = int(os.getenv('RETENTION_PERIOD', 180))
+
 ALLOWED_HOSTS = []
 
 if os.getenv('ALLOWED_HOSTS', False):
@@ -256,6 +258,12 @@ if not DISABLE_ANALYTICS:
     CELERY_BEAT_SCHEDULE['generate-monthly-report-backlog'] = {
         'task': 'analytics.tasks.ble_fill_report_backlog',
         'schedule': crontab(minute='25'),
+        'args': ('M',)
+    }
+
+    CELERY_BEAT_SCHEDULE['purge_old_scan_records'] = {
+        'task': 'analytics.tasks.ble_fill_report_backlog',
+        'schedule': crontab(hour=1, minute='45'),
         'args': ('M',)
     }
 

@@ -20,6 +20,12 @@ def ping_mixpanel():
 
 
 @task
+def purge_old_scan_records():
+    cut_off = timezone.now() - timedelta(days=settings.RETENTION_PERIOD)
+    return(ScanRecord.objects.filter(timestamp__lte=cut_off).delete())
+
+
+@task
 def ble_generate_hourly_report(date=None):
     """
     Takes the input in the form of YYYY-MM-DDTHH:MM
