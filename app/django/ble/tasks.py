@@ -47,6 +47,6 @@ def scan(timeout=30):
     if perform_scan:
         for device in ble_helper.scan_for_btle_devices(timeout=timeout):
             populate_device(device)
-        return('Successfully scanned.')
+        return('Successfully scanned. Found {} devices.'.format(len(perform_scan)))
     else:
         return('Unable to scan for devices.')
