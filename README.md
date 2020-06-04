@@ -90,7 +90,7 @@ Next, you need to create an admin user:
 $ docker exec -ti sonar_gunicorn_1 python manage.py createsuperuser
 ```
 
-Finally, you should be able to access the web interface at [localhost:8000](http://localhost:8000).
+Finally, you should be able to access the web interface at [localhost:80](http://localhost:80).
 
 It's also worth pointing out that the local path is volume mounted. Hence, you can make live-changes on the file system and they will be reflected directly.
 
