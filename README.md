@@ -1,5 +1,7 @@
 # README
 
+![](/app/django/analytics/static/img/bat.svg)
+
 **STATUS:** Beta
 
 ## Goal
