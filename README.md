@@ -1,4 +1,5 @@
 # README
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/a7436df462dd4d6ea4550098505b6127)](https://www.codacy.com/gh/databat-io/sonar?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=databat-io/sonar&amp;utm_campaign=Badge_Grade)
 
 ![](/app/django/analytics/static/img/bat.svg)
 
