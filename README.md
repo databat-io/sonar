@@ -58,11 +58,11 @@ The following environment variables can be used to modify the behavior:
 
 | Environment Variable | Default Value | Description                                                                                                                  |
 | -------------        | ------------  | -----                                                                                                                        |
-| ALLOWED_HOSTS        |               | Use this to add additional hostname/IPs. Use "\|" as the separator for multiple entries. The Balena public hostname is whitelisted by default. |
+| ALLOWED_HOSTS        |               | Use this to add additional hostname/IPs. Use '\|' as the separator for multiple entries. The Balena public hostname is whitelisted by default. |
 | DEBUG                | 0             | Set to '1' to enable debug mode.                                                                                             |
 | DEV_MODE             | 0             | Set to '1' enable development mode.                                                                                          |
 | DISABLE_ANALYTICS    | 0             | Set to '1' to disable processing of analytics.                                                                               |
-| DISABLE_SCANNING     | 0             | Set to '1' to disable BLE scanning (useful for processing node).                                                             |
+| DISABLE_SCANNING     | 0             | Set to '1' to disable Bluetooth scanning (useful for processing node).                                                             |
 | DJANGO_SECRET        |               | Set this to a random string. You can use something like [djecrety.ir/](https://djecrety.ir), or generate it by hand.         |
 | POSTGRES_DATABASE    | sonar         | Set the PostgreSQL database.                                                                                                 |
 | POSTGRES_HOST        |               | Set the PostgreSQL hostname.                                                                                                 |
