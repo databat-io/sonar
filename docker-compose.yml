@@ -29,6 +29,7 @@ services:
       - 'resin-data:/data'
     environment:
       GUNICORN: 1
+      ALLOWED_HOSTS: "${ALLOWED_HOSTS}"
   redis:
     build: ./redis
     restart: on-failure

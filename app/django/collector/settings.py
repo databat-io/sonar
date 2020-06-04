@@ -51,12 +51,14 @@ RETENTION_PERIOD = int(os.getenv('RETENTION_PERIOD', 180))
 ALLOWED_HOSTS = []
 
 if os.getenv('ALLOWED_HOSTS', False):
-    ALLOWED_HOSTS += [os.getenv('ALLOWED_HOSTS')]
+    for host in os.getenv('ALLOWED_HOSTS').split('|'):
+        ALLOWED_HOSTS.append(host)
 
 if DEV_MODE:
     ALLOWED_HOSTS += ['*']
 
-ALLOWED_HOSTS += ['.resindevice.io', '.balena-devices.com']
+if BALENA:
+    ALLOWED_HOSTS += ['.resindevice.io', '.balena-devices.com']
 
 # Application definition
 
