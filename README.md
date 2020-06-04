@@ -1,6 +1,6 @@
 # README
 
-**STATUS:** MVP
+**STATUS:** Beta
 
 ## Goal
 
@@ -20,10 +20,10 @@ The primary use case is to monitor foot traffic in retail environment and simila
 ![Daily View](/img/sonar_daily_view.png?raw=true)
 
 
-## Hardware requirements
+## Supported hardware
 
- * A Raspberry Pi 3 Model B
- * Raspbian w/ Docker installed or Balena
+ * Raspberry Pi 3/3+ Model B
+ * Raspberry Pi 4 Model B
 
 ## Installation
 
@@ -44,22 +44,7 @@ Once the build is done, the device will automatically pull down the image and st
 
 ### Raspbian
 
-In order to run Sonar, you need to have Docker installed.
-
-The easiest way to install Docker on Raspbian is by simply running:
-
-```
-$ curl -sSL https://get.docker.com | sh
-$ sudo usermod -aG docker pi
-```
-
-You then need to remove the bluetooth stack from the host:
-
-```
-$ sudo apt-get purge bluez
-```
-TODO: Complete.
-
+@TODO
 
 ### Configuration
 
