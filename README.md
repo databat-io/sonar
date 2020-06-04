@@ -27,12 +27,23 @@ The primary use case is to monitor foot traffic in retail environment and simila
 
 ## Installation
 
-### Balena
+### Raspbian
 
-The easiest way to run Sonar is through Balena. After creating an application on Balena, simply run:
+To install Sonar on Raspbian/Raspberry Pi OS, you can use the following command:
 
 ```
+$ curl -fsSL get.databat.io | sudo bash
+```
 
+Please note that you need `curl` installed, and the Lite version is most suited for this use case. It is also recommended that you use a **dedicated** Raspberry Pi for Sonar.
+
+You can also use the same script to update Sonar.
+
+### Balena
+
+Running Sonar on [Balena](https://www.balena.io/) is a breeze. After creating an application on Balena, simply run:
+
+```
 $ git clone git@github.com:databat-io/sonar.git
 $ cd sonar
 $ git remote add balena username@git.balena-cloud.com:username/mysonarapp.git
@@ -40,11 +51,6 @@ $ git push balena master
 ```
 
 Once the build is done, the device will automatically pull down the image and start running.
-
-
-### Raspbian
-
-@TODO
 
 ### Configuration
 
@@ -65,14 +71,7 @@ The following environment variables can be used to modify the behavior:
 | RETENTION_PERIOD     | 180           | Retention period (in days) to store detected devices.                                                                        |
 | USE_POSTGRES         | 0             | Set to '1' to use PostgreSQL as the database.                                                                                |
 
-### Building the docker image
-
-```
-$ git clone git@github.com:databat-io/sonar.git
-$ cd sonar
-$ ./bin/build_image.sh
-```
-
+If you're using Raspbian, the easiest way to use environment is to use [override](https://docs.docker.com/compose/extends/) feature. In Balena, you use the built-in environment variable feature.
 
 ## Development
 
@@ -110,8 +109,3 @@ Once you have the files available locally, you can use the following command to 
 $ python manage.py loaddata datadump.json
 ```
 
-## FAQ
-
-### Why Django 1.11 and not Django 2?
-
-Good question. I started out with Django 2, but due to the fact that some of the required Bluetooth libraries failed to build with Python 3.
