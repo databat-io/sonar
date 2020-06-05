@@ -35,13 +35,16 @@ def populate_device(device):
 @task
 def scan(timeout=30):
 
-    if r.get('btle_error') > 20:
-        print('Hit BTLEManagementError threashold. Rebooting.')
-        perform_reboot = requests.post(
-            '{}/v1/reboot'.format(settings.BALENA_SUPERVISOR_ADDRESS),
-            params = {'apikey': settings.BALENA_SUPERVISOR_API_KEY}
-        )
-        return perform_reboot
+    if r.get('btle-error') > 20:
+        print('Hit BTLEManagementError threshold. Rebooting.')
+        if settings.BALENA:
+            perform_reboot = requests.post(
+                '{}/v1/reboot'.format(settings.BALENA_SUPERVISOR_ADDRESS),
+                params = {'apikey': settings.BALENA_SUPERVISOR_API_KEY}
+            )
+            return perform_reboot
+        else:
+            print('Reboot for non-Balena is not implemented yet.')
 
     perform_scan = ble_helper.scan_for_btle_devices(timeout=timeout)
     if perform_scan:
