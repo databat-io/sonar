@@ -72,7 +72,7 @@ The following environment variables can be used to modify the behavior:
 | POSTGRES_PASSWORD    |               | Set the PostgreSQL password.                                                                                              |
 | POSTGRES_USER        | sonar         | Set the PostgreSQL username.                                                                                              |
 | RETENTION_PERIOD     | 180           | Retention period (in days) to store detected devices.                                                                     |
-| SENSITIVITY          | -100          | Set this to a value between 0 and -250 to calibrate the sensitivity. The higher the value, fewer devices will be counted. |
+| SENSITIVITY          | -100          | Set this to a value between 0 and -250 to calibrate the sensitivity. The higher (negative) value, fewer devices will be counted. |
 | USE_POSTGRES         | 0             | Set to '1' to use PostgreSQL as the database.                                                                             |
 
 If you're using Raspbian, the easiest way to use environment is to use [override](https://docs.docker.com/compose/extends/) feature. In Balena, you use the built-in environment variable feature.
