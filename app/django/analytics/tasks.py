@@ -51,7 +51,8 @@ def ble_generate_hourly_report(date=None):
     devices = set()
     for d in ScanRecord.objects.filter(
         timestamp__date=datetime_obj_local.date(),
-        timestamp__hour=datetime_obj_local.hour
+        timestamp__hour=datetime_obj_local.hour,
+        rssi__lte=settings.SENSITIVITY
     ):
         devices.add(d.device.device_address)
 
@@ -88,7 +89,8 @@ def ble_generate_daily_report(date=None):
 
     devices = set()
     for d in ScanRecord.objects.filter(
-        timestamp__date=datetime_obj_local.date()
+        timestamp__date=datetime_obj_local.date(),
+        rssi__lte=settings.SENSITIVITY
     ):
         devices.add(d.device.device_address)
 
@@ -131,6 +133,7 @@ def ble_generate_monthly_report(date=None):
     for d in ScanRecord.objects.filter(
         timestamp__year=datetime_obj_local.year,
         timestamp__month=datetime_obj_local.month,
+        rssi__lte=settings.SENSITIVITY
     ):
         devices.add(d.device.device_address)
 
