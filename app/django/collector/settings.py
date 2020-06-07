@@ -45,6 +45,7 @@ BALENA_SUPERVISOR_API_KEY = os.getenv('BALENA_SUPERVISOR_API_KEY')
 DISABLE_ANALYTICS = string_to_bool(os.getenv('DISABLE_ANALYTICS', False))
 DISABLE_SCANNING = string_to_bool(os.getenv('DISABLE_SCANNING', False))
 
+# In days. Set to zero to disable.
 RETENTION_PERIOD = int(os.getenv('RETENTION_PERIOD', 180))
 
 # Set the sensitivity (0 - ~-250). The higher the number,

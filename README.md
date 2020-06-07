@@ -71,7 +71,7 @@ The following environment variables can be used to modify the behavior:
 | POSTGRES_HOST        |               | Set the PostgreSQL hostname.                                                                                              |
 | POSTGRES_PASSWORD    |               | Set the PostgreSQL password.                                                                                              |
 | POSTGRES_USER        | sonar         | Set the PostgreSQL username.                                                                                              |
-| RETENTION_PERIOD     | 180           | Retention period (in days) to store detected devices.                                                                     |
+| RETENTION_PERIOD     | 180           | Retention period (in days) to store detected devices. Set to 0 to disable.                                                |
 | SENSITIVITY          | -100          | Set this to a value between 0 and -250 to calibrate the sensitivity. The higher (negative) value, fewer devices will be counted. |
 | USE_POSTGRES         | 0             | Set to '1' to use PostgreSQL as the database.                                                                             |
 

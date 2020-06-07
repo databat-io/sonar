@@ -21,8 +21,11 @@ def ping_mixpanel():
 
 @task
 def purge_old_scan_records():
-    cut_off = timezone.now() - timedelta(days=settings.RETENTION_PERIOD)
-    return(ScanRecord.objects.filter(timestamp__lte=cut_off).delete())
+    if settings.RETENTION_PERIOD > 0:
+        cut_off = timezone.now() - timedelta(days=settings.RETENTION_PERIOD)
+        return(ScanRecord.objects.filter(timestamp__lte=cut_off).delete())
+    else:
+        print('Retention is disabled.')
 
 
 @task
