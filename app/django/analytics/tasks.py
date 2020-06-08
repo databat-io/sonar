@@ -12,7 +12,11 @@ import pytz
 def ping_mixpanel():
     mp = Mixpanel(settings.MIXPANEL_TOKEN)
     try:
-        mp.track(settings.DEVICE_ID, 'ping')
+        mp.track(settings.DEVICE_ID,
+                 'ping', {
+                     'Balena': settings.BALENA
+                 }
+                 )
     except MixpanelException:
         pass
     except AttributeError:
