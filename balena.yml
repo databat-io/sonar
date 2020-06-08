@@ -1,0 +1,6 @@
+repoUrl: "https://github.com/databat-io/sonar"
+applicationEnvironmentVariables:
+ - DISABLE_ANALYTICS: 0
+ - DISABLE_SCANNING: 0
+ - SENSITIVITY: -100
+ - RETENTION_PERIOD: 180

@@ -51,6 +51,8 @@ You can also use the same script to update Sonar.
 
 ### Balena
 
+[![](https://www.balena.io/deploy.png)](https://dashboard.balena-cloud.com/deploy)
+
 Running Sonar on [Balena](https://www.balena.io/) is a breeze. After creating an application on Balena, simply run:
 
 ```
