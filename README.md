@@ -3,18 +3,25 @@
 
 ![](/app/django/analytics/static/img/bat.svg)
 
-**STATUS:** Beta
+## tl;dr
 
-## Goal
+The goal with Sonar is listen for RF signals (Bluetooth and WiFi) do determine the foot traffic and people density in a given area.
 
-The goal for this tool is two-fold:
+Using this data, the goal is to be able to produce reports such that the user can understand patterns over time.
 
- * Scan the surrounding for BLE devices
- * Produce user friendly reports for said data
+While RF signals are not as accurate as say a people counter by the entrance, it is a lot cheaper to install, as it can be installed out-of-sight (e.g. dropped into the ceiling).
+
+Moreover, unlike traditional people trackers, using RF technology, we're able to better understand the visitors based on the type of devices they are carrying.
 
 ## Use case
 
-The primary use case is to monitor foot traffic in retail environment and similar setups where you care about the foot traffic flow. You could even deploy multiple Sonar devices and decrease the sensitivity in order to provide more granular.
+The primary use case is to monitor foot traffic in commercial environments where you care about foot traffic flow. You could even deploy multiple Sonar devices and decrease the sensitivity in order to provide more granular.
+
+## Roadmap
+
+* Add support for listening on WiFi traffic (#10)
+* Enrich the statistics with vendor information (#26)
+* Integrate with existing solutions, such as Unifi Controller (#23)
 
 ## Screenshots
 
