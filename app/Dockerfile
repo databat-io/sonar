@@ -7,7 +7,6 @@ RUN install_packages \
     libpq-dev \
     python3-pip \
     python3-dev \
-    python3-numpy \
     python3-smbus \
     libglib2.0-dev
 
