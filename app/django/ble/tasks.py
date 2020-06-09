@@ -35,7 +35,7 @@ def populate_device(device):
     if not created:
         obj.seen_counter = obj.seen_counter + 1
 
-    if device.rssi < settings.SENSITIVITY:
+    if int(device.rssi) < settings.SENSITIVITY:
         obj.seen_within_geofence = True
 
     if obj.seen_counter > settings.DEVICE_IGNORE_THRESHOLD:
