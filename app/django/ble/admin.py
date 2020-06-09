@@ -25,12 +25,14 @@ class DeviceAdmin(admin.ModelAdmin):
         'seen_last',
         'seen_first',
         'seen_counter',
+        'seen_within_geofence'
     ]
 
     ordering = ('-seen_last',)
     readonly_fields = (
         'seen_first',
         'seen_last',
+        'seen_within_geofence',
         'device_address',
     )
 

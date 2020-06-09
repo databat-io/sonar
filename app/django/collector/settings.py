@@ -52,6 +52,8 @@ RETENTION_PERIOD = int(os.getenv('RETENTION_PERIOD', 180))
 # the fewer devices will be picked up.
 SENSITIVITY = int(os.getenv('SENSITIVITY', -100))
 
+DEVICE_IGNORE_THRESHOLD = int(os.getenv('DEVICE_IGNORE_THRESHOLD', 5000))
+
 ALLOWED_HOSTS = []
 
 if os.getenv('ALLOWED_HOSTS', False):
@@ -114,7 +116,10 @@ WSGI_APPLICATION = 'collector.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-DATABASE_PATH = '/data/collector'
+if not DEV_MODE:
+    DATABASE_PATH = '/data/collector'
+else:
+    DATABASE_PATH = ''
 
 if string_to_bool(os.getenv('USE_POSTGRES', False)):
     DATABASES = {
@@ -139,7 +144,6 @@ else:
     }
 
 
-DEVICE_IGNORE_THRESHOLD = int(os.getenv('DEVICE_IGNORE_THRESHOLD', 5000))
 
 
 def GET_DEVICE_ID():

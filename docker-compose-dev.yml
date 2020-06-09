@@ -15,7 +15,7 @@ services:
       - 'resin-data:/data'
     environment:
       CELERY: 1
-      DISABLE_ANALYTICS: 1
+      DISABLE_SCANNING: 1
       USE_POSTGRES: 1
       POSTGRES_PASSWORD: randompassword
       POSTGRES_USER: sonar
