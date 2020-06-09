@@ -14,7 +14,7 @@ def ping_mixpanel():
     try:
         mp.track(settings.DEVICE_ID,
                  'ping', {
-                     'Balena': settings.BALENA
+                     'Balena': bool(settings.BALENA)
                  }
                  )
     except MixpanelException:
