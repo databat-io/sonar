@@ -69,7 +69,6 @@ if BALENA:
 # Application definition
 
 INSTALLED_APPS = [
-    'rest_framework',
     'chartit',
     'analytics.apps.AnalyticsConfig',
     'ble.apps.BleConfig',
