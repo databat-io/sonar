@@ -5,6 +5,7 @@ RUN install_packages \
     bluez-firmware \
     build-essential \
     libpq-dev \
+    python3-pip \
     python3-dev \
     python3-numpy \
     python3-smbus \
