@@ -22,10 +22,6 @@ COPY ./requirements.txt /requirements.txt
 # pip install python deps from requirements.txt on the resin.io build server
 RUN pip3 install -r /requirements.txt --no-cache-dir
 
-# Fix for error with bluepy
-#RUN cd /usr/local/lib/python2.7/site-packages/bluepy && \
-#    make
-
 # Copy in actual code base
 COPY django /usr/src/app/
 COPY start.sh /
