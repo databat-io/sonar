@@ -14,6 +14,17 @@ r = redis.Redis(
 )
 
 
+def get_error_counter():
+    """
+    Return error counter.
+    If undefined, return 0.
+    """
+    counter = r.get('btle-error')
+    if counter:
+        return counter
+    return 0
+
+
 def populate_device(device):
 
     obj, created = Device.objects.get_or_create(
@@ -38,7 +49,7 @@ def populate_device(device):
 @task
 def scan(timeout=30):
 
-    if r.get('btle-error') > 20:
+    if get_error_counter() > 20:
         print('Hit BTLEManagementError threshold. Rebooting.')
         if settings.BALENA:
             perform_reboot = requests.post(
