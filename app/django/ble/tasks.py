@@ -65,7 +65,7 @@ def scan(timeout=30):
     if perform_scan:
         for device in ble_helper.scan_for_btle_devices(timeout=timeout):
             populate_device(device)
-            if device.irssi < settings.SENSITIVITY:
+            if device.rssi < settings.SENSITIVITY:
                 devices_within_geofence = within_geofence + 1
         return('Successfully scanned. Found {} devices within the geofence ({} in total).'.format(
             devices_within_geofence,
