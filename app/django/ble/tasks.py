@@ -21,7 +21,7 @@ def get_error_counter():
     """
     counter = r.get('btle-error')
     if counter:
-        return counter
+        return int(counter)
     return 0
 
 
