@@ -14,7 +14,7 @@ class Device(models.Model):
     seen_first = models.DateTimeField(auto_now_add=True)
     seen_last = models.DateTimeField(auto_now=True)
     seen_counter = models.PositiveIntegerField(default=1)
-    seen_within_geofence = models.BooleanField(default=False)
+    #seen_within_geofence = models.BooleanField(default=False)
     ignore = models.BooleanField(default=False)
 
     def __str__(self):
@@ -29,8 +29,8 @@ class Device(models.Model):
     def seen_this_week(self):
         return self.seen_last.strftime('%W') == timezone.now().strftime('%W')
 
-    def seen_within_geofence(self):
-        return self.seen_within_fence < settings.SENSITIVITY
+    #def seen_within_geofence(self):
+    #    return self.seen_within_fence < settings.SENSITIVITY
 
 
 class ScanRecord(models.Model):
