@@ -13,12 +13,13 @@ RUN install_packages \
 # Set our working directory
 WORKDIR /usr/src/app
 
-# Upgrade pip
+# Upgrade pip and setuptools
 RUN pip3 install --upgrade pip
+RUN pip3 install -U setuptools
 
 COPY ./requirements.txt /requirements.txt
 
-# pip install python deps from requirements.txt on the resin.io build server
+# pip install python deps from requirements.txt on the Balena's build server
 RUN pip3 install -r /requirements.txt --no-cache-dir
 
 # Copy in actual code base
