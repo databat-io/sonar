@@ -8,8 +8,8 @@ mkdir -p \
 if [ "$GUNICORN" = "1" ]; then
 
     # Run migrations first
-    python manage.py migrate
-    python manage.py collectstatic --noinput
+    python3 manage.py migrate
+    python3 manage.py collectstatic --noinput
 
     /usr/local/bin/gunicorn \
         --access-logfile - \

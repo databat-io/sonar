@@ -5,25 +5,25 @@ RUN install_packages \
     bluez-firmware \
     build-essential \
     libpq-dev \
-    python-dev \
-    python-numpy \
-    python-smbus \
+    python3-dev \
+    python3-numpy \
+    python3-smbus \
     libglib2.0-dev
 
 # Set our working directory
 WORKDIR /usr/src/app
 
 # Upgrade pip
-RUN pip install --upgrade pip
+RUN pip3 install --upgrade pip
 
 COPY ./requirements.txt /requirements.txt
 
 # pip install python deps from requirements.txt on the resin.io build server
-RUN pip install -r /requirements.txt --no-cache-dir
+RUN pip3 install -r /requirements.txt --no-cache-dir
 
 # Fix for error with bluepy
-RUN cd /usr/local/lib/python2.7/site-packages/bluepy && \
-    make
+#RUN cd /usr/local/lib/python2.7/site-packages/bluepy && \
+#    make
 
 # Copy in actual code base
 COPY django /usr/src/app/
