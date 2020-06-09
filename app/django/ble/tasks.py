@@ -61,9 +61,15 @@ def scan(timeout=30):
             print('Reboot for non-Balena is not implemented yet.')
 
     perform_scan = ble_helper.scan_for_btle_devices(timeout=timeout)
+    devices_within_geofence = 0
     if perform_scan:
         for device in ble_helper.scan_for_btle_devices(timeout=timeout):
             populate_device(device)
-        return('Successfully scanned. Found {} devices.'.format(len(perform_scan)))
+            if device.irssi < settings.SENSITIVITY:
+                devices_within_geofence = within_geofence + 1
+        return('Successfully scanned. Found {} devices within the geofence ({} in total).'.format(
+            devices_within_geofence,
+            len(perform_scan))
+        )
     else:
         return('Unable to scan for devices.')
