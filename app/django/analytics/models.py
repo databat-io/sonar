@@ -11,6 +11,9 @@ REPORT_TYPE = (
 
 
 class BleReport(models.Model):
+    class Meta:
+        managed = True
+
     report_type = models.CharField(
         max_length=1,
         choices=REPORT_TYPE,

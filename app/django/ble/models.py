@@ -6,6 +6,9 @@ from django.conf import settings
 
 
 class Device(models.Model):
+    class Meta:
+        managed = True
+
     device_address = models.CharField(max_length=60)
     device_type = models.CharField(max_length=200)
     seen_first = models.DateTimeField(auto_now_add=True)
@@ -31,6 +34,9 @@ class Device(models.Model):
 
 
 class ScanRecord(models.Model):
+    class Meta:
+        managed = True
+
     device = models.ForeignKey(
         Device,
         on_delete=models.CASCADE,
