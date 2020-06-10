@@ -29,7 +29,7 @@ def dashboard(request, *args, **kwargs):
 
     context = {
         'page_title': page_title,
-        'visitors_this_hour': visitors_this_hour
+        'visitors_this_hour': visitors_this_hour,
         'visitors_today': visitors_today
     }
     return render(request, 'analytics/dashboard.html', context)
