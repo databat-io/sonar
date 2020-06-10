@@ -35,7 +35,7 @@ def populate_device(device):
 
     if device.getValue(ScanEntry.MANUFACTURER):
         obj.device_manufacturer = ble_helper.lookup_bluetooth_manufacturer(
-            device.getValue(ScanEntry.MANUFACTURER)
+            device.getValueText(ScanEntry.MANUFACTURER)
         )
 
     if not created:
