@@ -22,9 +22,15 @@ def dashboard(request, *args, **kwargs):
         rssi__lte=settings.SENSITIVITY
     ).count()
 
+    visitors_today = ScanRecord.objects.filter(
+        timestamp__date=current_time.date(),
+        rssi__lte=settings.SENSITIVITY
+    ).count()
+
     context = {
         'page_title': page_title,
         'visitors_this_hour': visitors_this_hour
+        'visitors_today': visitors_today
     }
     return render(request, 'analytics/dashboard.html', context)
 
