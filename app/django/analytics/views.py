@@ -1,14 +1,98 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from chartit import DataPool, Chart
-from django.shortcuts import render, render_to_response, reverse, redirect
+from .forms import DayReportForm, MonthReportForm
 from .helpers.helpers import chart_format_day_str, chart_format_month_str
 from .models import BleReport
-from .forms import DayReportForm, MonthReportForm
-from datetime import datetime
+from ble.models import ScanRecord, Device
+from chartit import DataPool, Chart
+from datetime import datetime, timedelta
+from django.conf import settings
+from django.shortcuts import render, render_to_response, reverse, redirect
+from django.utils import timezone
+import redis
+
+r = redis.Redis(
+        host=settings.REDIS_HOST,
+        port=settings.REDIS_PORT,
+        db=settings.REDIS_DATABASE
+)
 
 
-def index(request, *args, **kwargs):
+def get_visitors(days=1):
+    cutoff = timezone.now() - timedelta(days=days)
+    redis_key = 'visitors-days-{}'.format(days)
+
+    if not r.get(redis_key):
+        visitors = ScanRecord.objects.filter(
+            timestamp__date__gte=cutoff.date(),
+            rssi__lte=settings.SENSITIVITY
+        ).count()
+        r.set(redis_key, visitors)
+        r.expire(redis_key, 60*10)
+        return visitors
+    else:
+        return int(r.get(redis_key))
+
+
+def get_visitors_this_hour():
+    current_time = timezone.now()
+
+    if not r.get('visitors-this-hour'):
+        visitors_this_hour = ScanRecord.objects.filter(
+            timestamp__date=current_time.date(),
+            timestamp__hour=current_time.hour,
+            rssi__lte=settings.SENSITIVITY
+        ).count()
+        r.set('visitors-this-hour', visitors_this_hour)
+        r.expire('visitors-this-hour', 60*5)
+        return visitors_this_hour
+    else:
+        return int(r.get('visitors-this-hour'))
+
+
+def get_returning_visitors(days=30):
+    current_time = timezone.now()
+    redis_key = 'returning-visitors-{}'.format(days)
+
+    if not r.get(redis_key):
+        returning_visitors = Device.objects.filter(
+            ignore=False,
+            seen_within_geofence=True,
+            seen_last__gte=current_time - timedelta(days=1),
+            seen_first__gte=current_time - timedelta(days=days),
+            seen_first__lte=current_time - timedelta(days=1),
+            seen_counter__gt=2
+        ).count()
+        r.set(redis_key, returning_visitors)
+        r.expire(redis_key, 60*15)
+        return returning_visitors
+    else:
+        return int(r.get(redis_key))
+
+
+
+def dashboard(request, *args, **kwargs):
+    page_title = "Dashboard"
+
+    def days_since_start_of_week():
+        monday = timezone.now() - timedelta(days=timezone.now().weekday() % 7)
+        return (timezone.now() - monday).days
+
+
+    context = {
+        'page_title': page_title,
+        'visitors_this_hour': get_visitors_this_hour(),
+        'visitors_today': get_visitors(days=0),
+        'visitors_this_week': get_visitors(days=days_since_start_of_week()),
+        'returning_visitors_30_days': get_returning_visitors(days=30),
+        'returning_visitors_60_days': get_returning_visitors(days=60),
+        'returning_visitors_180_days': get_returning_visitors(days=180),
+    }
+    return render(request, 'analytics/dashboard.html', context)
+
+
+def report(request, *args, **kwargs):
+    page_title = "Report"
 
     day_periods = BleReport.objects.filter(
         report_type='D'
@@ -53,17 +137,18 @@ def index(request, *args, **kwargs):
                 pass # And re-render the template with form errors (done below)
 
     context = {
+        'page_title': page_title,
         'min_day': min_day,
         'max_day': max_day,
         'enabled_days_list': enabled_days_list,
         'day_form': day_form,
         'month_form': month_form,
     }
-    return render(request, 'analytics/index.html', context)
+    return render(request, 'analytics/report.html', context)
 
 
 def day_view(request, year, month, day):
-    page_title = "Day view"
+    page_title = "Report: Day view"
 
     hourly_reports = BleReport.objects.filter(
             report_type='H',
@@ -154,14 +239,22 @@ def day_view(request, year, month, day):
         x_sortf_mapf_mts=(None, chart_format_day_str, False)
     )
 
+    context = {
+        'chart': cht,
+        'year': year,
+        'month': month,
+        'day': day,
+        'page_title': page_title
+    }
+
     return render_to_response(
         'analytics/graph.html',
-        context={'chart': cht, 'year': year, 'month': month, 'day': day, 'page_title': page_title}
+        context=context
     )
 
 
 def month_view(request, year, month):
-    page_title = "Month view"
+    page_title = "Report: Month view"
 
     daily_reports = BleReport.objects.filter(
             report_type='D',
@@ -244,10 +337,16 @@ def month_view(request, year, month):
         },
         x_sortf_mapf_mts=(None, chart_format_month_str, False)
     )
+    context = {
+        'chart': cht,
+        'year': year,
+        'month': month,
+        'page_title': page_title
+    }
 
     return render_to_response(
         'analytics/graph.html',
-        context={'chart': cht, 'year': year, 'month': month, 'page_title': page_title}
+        context=context
     )
 
 

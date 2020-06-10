@@ -27,7 +27,9 @@ The primary use case is to monitor foot traffic in commercial environments where
 
 ## Screenshots
 
-![Overview](/img/sonar_date_picker.png?raw=true)
+![Dashboard](/img/sonar_dashboard.png?raw=true)
+
+![Report](/img/sonar_date_picker.png?raw=true)
 
 ![Daily View](/img/sonar_daily_view.png?raw=true)
 
