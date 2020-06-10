@@ -18,18 +18,20 @@ r = redis.Redis(
 )
 
 
-def get_visitors_today():
-    current_time = timezone.now()
-    if not r.get('visitors-today'):
-        visitors_today = ScanRecord.objects.filter(
-            timestamp__date=current_time.date(),
+def get_visitors(days=1):
+    cutoff = timezone.now() - timedelta(days=days)
+    redis_key = 'visitors-days-{}'.format(days)
+
+    if not r.get(redis_key):
+        visitors = ScanRecord.objects.filter(
+            timestamp__date__gte=cutoff.date(),
             rssi__lte=settings.SENSITIVITY
         ).count()
-        r.set('visitors-today', visitors_today)
-        r.expire('visitors-today', 60*10)
-        return visitors_today
+        r.set(redis_key, visitors)
+        r.expire(redis_key, 60*10)
+        return visitors
     else:
-        return int(r.get('visitors-today'))
+        return int(r.get(redis_key))
 
 
 def get_visitors_this_hour():
@@ -59,7 +61,7 @@ def get_returning_visitors(days=30):
             seen_last__gte=current_time - timedelta(days=1),
             seen_first__gte=current_time - timedelta(days=days),
             seen_first__lte=current_time - timedelta(days=1),
-            seen__gte=2
+            seen_counter__gt=2
         ).count()
         r.set(redis_key, returning_visitors)
         r.expire(redis_key, 60*15)
@@ -72,10 +74,16 @@ def get_returning_visitors(days=30):
 def dashboard(request, *args, **kwargs):
     page_title = "Dashboard"
 
+    def days_since_start_of_week():
+        monday = timezone.now() - timedelta(days=timezone.now().weekday() % 7)
+        return (timezone.now() - monday).days
+
+
     context = {
         'page_title': page_title,
         'visitors_this_hour': get_visitors_this_hour(),
-        'visitors_today': get_visitors_today(),
+        'visitors_today': get_visitors(days=0),
+        'visitors_this_week': get_visitors(days=days_since_start_of_week()),
         'returning_visitors_30_days': get_returning_visitors(days=30),
         'returning_visitors_60_days': get_returning_visitors(days=60),
         'returning_visitors_180_days': get_returning_visitors(days=180),
