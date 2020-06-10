@@ -8,3 +8,4 @@ app/staticfiles/*
 app/django/staticfiles
 app/django/celerybeat-schedule
 .env
+celerybeat-schedule.db
