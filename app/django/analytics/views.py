@@ -62,7 +62,7 @@ def get_returning_visitors(days=30):
         ).count()
         r.set(redis_key, returning_visitors)
         r.expire(redis_key, 60*15)
-        return return_visitors
+        return returning_visitors
     else:
         return int(r.get(redis_key))
 
