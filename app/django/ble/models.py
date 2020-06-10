@@ -7,11 +7,12 @@ from django.db import models
 
 class Device(models.Model):
     device_address = models.CharField(max_length=60)
+    device_manufacturer = models.CharField(max_length=60)
     device_type = models.CharField(max_length=200)
+    ignore = models.BooleanField(default=False)
+    seen_counter = models.PositiveIntegerField(default=1)
     seen_first = models.DateTimeField(auto_now_add=True)
     seen_last = models.DateTimeField(auto_now=True)
-    seen_counter = models.PositiveIntegerField(default=1)
-    ignore = models.BooleanField(default=False)
     seen_within_geofence = models.BooleanField(default=False)
 
     def __str__(self):

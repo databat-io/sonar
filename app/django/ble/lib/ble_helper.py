@@ -1,5 +1,6 @@
 from bluepy.btle import Scanner, DefaultDelegate, BTLEManagementError
 from django.conf import settings
+import json
 import redis
 
 LOCK_NAME = 'btle-lock'
@@ -33,6 +34,34 @@ def log_btle_error():
     else:
         r.set(btle_error_key, 1)
         r.expire(btle_error_key, btle_error_key_ttl)
+
+
+def lookup_bluetooth_manufacturer(manufacturer):
+    """
+    We need to do a fair bit of juggling here, but the goal is to
+    return the manufacturer based on the data we captured.
+
+    We need to swap around the result (see https://stackoverflow.com/questions/23626871/list-of-company-ids-for-manufacturer-specific-data-in-ble-advertising-packets#comment36359241_23626871)
+    and then convert it to decimal in order to look it up from the Nordic database.
+    """
+
+    altered_manufacturer = '0x{}{}'.format(manufacturer[2:4], manufacturer[0:2])
+    manufacturer_in_decimal = int(altered_manufacturer, 16)
+    redis_key = 'manufacturer-{}'.format(manufacturer_in_decimal)
+    lookup_result = 'Unknown'
+    redis_lookup = r.get(redis_key)
+
+    if not redis_lookup:
+        with open('company_ids.json', 'r') as company_ids:
+            company_database = json.loads(company_ids.read())
+
+        for company in company_database:
+            r.set('manufacturer-{}'.format(company['code']), company['name'])
+            if company['code'] == manufacturer_in_decimal:
+                lookup_result = company['name']
+        return lookup_result
+    else:
+        return redis_lookup
 
 
 def scan_for_btle_devices(timeout=30):
