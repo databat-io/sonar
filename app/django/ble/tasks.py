@@ -1,7 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 from ble.lib import ble_helper
 from ble.models import Device
-from btle import ScanEntry
+from bluepy.btle import ScanEntry
 from celery import task
 from django.conf import settings
 from django.utils import timezone
