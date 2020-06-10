@@ -58,7 +58,8 @@ def get_returning_visitors(days=30):
             seen_within_geofence=True,
             seen_last__gte=current_time - timedelta(days=1),
             seen_first__gte=current_time - timedelta(days=days),
-            seen_first__lte=current_time - timedelta(days=1)
+            seen_first__lte=current_time - timedelta(days=1),
+            seen__gte=2
         ).count()
         r.set(redis_key, returning_visitors)
         r.expire(redis_key, 60*15)
