@@ -1,0 +1,68 @@
+{% extends "analytics/base.html" %}
+
+{% load staticfiles %}
+{% load analytics_extras %}
+
+{% block page_title %}
+{{ page_title }}
+{% endblock page_title %}
+
+{% block page_specific_styles %}
+<link rel="stylesheet" href="{% static 'css/tempusdominus-bootstrap-4.min.css' %}" />
+{% endblock page_specific_styles %}
+
+{% block page_specific_scripts %}
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+<script type="text/javascript" src="{% static 'js/tempusdominus-bootstrap-4.min.js' %}"></script>
+{% endblock page_specific_scripts %}
+
+{% block content_class %}cards-page{% endblock content_class %}
+
+{% block body %}
+
+<div class="title-block">
+    <h3 class="title"> Dashboard </h3>
+    <p class="title-description"> Overview of your foot traffic </p>
+</div>
+
+<section class="section">
+    <div class="row sameheight-container">
+        <div class="col-xl-6">
+            <div class="card card-default">
+
+                <div class="card-header">
+                    <div class="header-block">
+                        <p class="title"> Today </p>
+                        <div>
+                            <i class="fa fa-users" aria-hidden="true">  {{ visitors_this_hour }}</i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.card -->
+        </div>
+        <!-- /.col-xl-6 -->
+        <div class="col-xl-6">
+            <div class="card card-default">
+
+                <div class="card-header">
+                    <div class="header-block">
+                        <p class="title"> Returning visitors </p>
+                        <div>
+                        <i class="fa fa-heart" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.card -->
+        </div>
+        <!-- /.col-xl-6 -->
+    </div>
+</section>
+
+{% endblock body %}
+
+{% block body_scripts %}
+{% endblock body_scripts %}

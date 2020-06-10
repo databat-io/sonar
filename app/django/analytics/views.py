@@ -1,14 +1,36 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from chartit import DataPool, Chart
-from django.shortcuts import render, render_to_response, reverse, redirect
+from .forms import DayReportForm, MonthReportForm
 from .helpers.helpers import chart_format_day_str, chart_format_month_str
 from .models import BleReport
-from .forms import DayReportForm, MonthReportForm
+from ble.models import ScanRecord
+from chartit import DataPool, Chart
 from datetime import datetime
+from django.conf import settings
+from django.shortcuts import render, render_to_response, reverse, redirect
+from django.utils import timezone
 
 
-def index(request, *args, **kwargs):
+def dashboard(request, *args, **kwargs):
+    page_title = "Dashboard"
+
+    current_time = timezone.now()
+
+    visitors_this_hour = ScanRecord.objects.filter(
+        timestamp__date=current_time.date(),
+        timestamp__hour=current_time.hour,
+        rssi__lte=settings.SENSITIVITY
+    ).count()
+
+    context = {
+        'page_title': page_title,
+        'visitors_this_hour': visitors_this_hour
+    }
+    return render(request, 'analytics/dashboard.html', context)
+
+
+def report(request, *args, **kwargs):
+    page_title = "Report"
 
     day_periods = BleReport.objects.filter(
         report_type='D'
@@ -53,17 +75,18 @@ def index(request, *args, **kwargs):
                 pass # And re-render the template with form errors (done below)
 
     context = {
+        'page_title': page_title,
         'min_day': min_day,
         'max_day': max_day,
         'enabled_days_list': enabled_days_list,
         'day_form': day_form,
         'month_form': month_form,
     }
-    return render(request, 'analytics/index.html', context)
+    return render(request, 'analytics/report.html', context)
 
 
 def day_view(request, year, month, day):
-    page_title = "Day view"
+    page_title = "Report: Day view"
 
     hourly_reports = BleReport.objects.filter(
             report_type='H',
@@ -154,14 +177,22 @@ def day_view(request, year, month, day):
         x_sortf_mapf_mts=(None, chart_format_day_str, False)
     )
 
+    context = {
+        'chart': cht,
+        'year': year,
+        'month': month,
+        'day': day,
+        'page_title': page_title
+    }
+
     return render_to_response(
         'analytics/graph.html',
-        context={'chart': cht, 'year': year, 'month': month, 'day': day, 'page_title': page_title}
+        context=context
     )
 
 
 def month_view(request, year, month):
-    page_title = "Month view"
+    page_title = "Report: Month view"
 
     daily_reports = BleReport.objects.filter(
             report_type='D',
@@ -244,10 +275,16 @@ def month_view(request, year, month):
         },
         x_sortf_mapf_mts=(None, chart_format_month_str, False)
     )
+    context = {
+        'chart': cht,
+        'year': year,
+        'month': month,
+        'page_title': page_title
+    }
 
     return render_to_response(
         'analytics/graph.html',
-        context={'chart': cht, 'year': year, 'month': month, 'page_title': page_title}
+        context=context
     )
 
 
