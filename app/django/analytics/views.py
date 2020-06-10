@@ -3,9 +3,9 @@ from __future__ import unicode_literals
 from .forms import DayReportForm, MonthReportForm
 from .helpers.helpers import chart_format_day_str, chart_format_month_str
 from .models import BleReport
-from ble.models import ScanRecord
+from ble.models import ScanRecord, Device
 from chartit import DataPool, Chart
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.conf import settings
 from django.shortcuts import render, render_to_response, reverse, redirect
 from django.utils import timezone
@@ -43,6 +43,7 @@ def get_visitors_this_hour():
         ).count()
         r.set('visitors-this-hour', visitors_this_hour)
         r.expire('visitors-this-hour', 60*5)
+        return visitors_this_hour
     else:
         return int(r.get('visitors-this-hour'))
 
@@ -61,8 +62,9 @@ def get_returning_visitors(days=30):
         ).count()
         r.set(redis_key, returning_visitors)
         r.expire(redis_key, 60*15)
+        return return_visitors
     else:
-        return int(r.get(redis-key))
+        return int(r.get(redis_key))
 
 
 
