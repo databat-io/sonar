@@ -34,11 +34,12 @@
 
                 <div class="card-header">
                     <div class="header-block">
+                        <i class="fa fa-users" aria-hidden="true"></i>
                         <p class="title"> Today </p>
                         <div>
-                            <ul>
-                              <i class="fa fa-users" aria-hidden="true">  {{ visitors_this_hour }} this hour</i>
-                              <i class="fa fa-users" aria-hidden="true">  {{ visitors_this_hour }} today</i>
+                            <ul class="item-list">
+                                <i>{{ visitors_this_hour }} this hour</i>
+                                <i>{{ visitors_this_hour }} today</i>
                             </ul>
                         </div>
                     </div>
@@ -52,10 +53,13 @@
 
                 <div class="card-header">
                     <div class="header-block">
-                        <p class="title"> Returning visitors </p>
+                        <i class="fa fa-heart" aria-hidden="true"></i>
+                        <p class="title"> Returning </p>
                         <div>
-                            <ul>
-                                 <i class="fa fa-heart" aria-hidden="true"></i>
+                            <ul class="item-list">
+                                <i>{{ returning_visitors_30_days }} within 30 days</i>
+                                <i>{{ returning_visitors_60_days }} within 60 days</i>
+                                <i>{{ returning_visitors_180_days }} within 180 days</i>
                             </ul>
                         </div>
                     </div>

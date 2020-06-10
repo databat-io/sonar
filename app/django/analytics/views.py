@@ -9,28 +9,58 @@ from datetime import datetime
 from django.conf import settings
 from django.shortcuts import render, render_to_response, reverse, redirect
 from django.utils import timezone
+import redis
+
+r = redis.Redis(
+        host=settings.REDIS_HOST,
+        port=settings.REDIS_PORT,
+        db=settings.REDIS_DATABASE
+)
+
+
+def get_visitors_today():
+    current_time = timezone.now()
+    if not r.get('visitors-today'):
+        visitors_today = ScanRecord.objects.filter(
+            timestamp__date=current_time.date(),
+            rssi__lte=settings.SENSITIVITY
+        ).count()
+        r.set('visitors-today', visitors_today)
+        r.expire('visitors-today', 60*10)
+        return visitors_today
+    else:
+        return int(r.get('visitors-today'))
+
+
+def get_visitors_this_hour():
+    current_time = timezone.now()
+
+    if not r.get('visitors-this-hour'):
+        visitors_this_hour = ScanRecord.objects.filter(
+            timestamp__date=current_time.date(),
+            timestamp__hour=current_time.hour,
+            rssi__lte=settings.SENSITIVITY
+        ).count()
+        r.set('visitors-this-hour', visitors_this_hour)
+        r.expire('visitors-this-hour', 60*5)
+    else:
+        return int(r.get('visitors-this-hour'))
 
 
 def dashboard(request, *args, **kwargs):
     page_title = "Dashboard"
 
-    current_time = timezone.now()
-
-    visitors_this_hour = ScanRecord.objects.filter(
-        timestamp__date=current_time.date(),
-        timestamp__hour=current_time.hour,
-        rssi__lte=settings.SENSITIVITY
-    ).count()
-
-    visitors_today = ScanRecord.objects.filter(
-        timestamp__date=current_time.date(),
-        rssi__lte=settings.SENSITIVITY
-    ).count()
+    returning_visitors_30_days = 0
+    returning_visitors_60_days = 0
+    returning_visitors_180_days = 0
 
     context = {
         'page_title': page_title,
-        'visitors_this_hour': visitors_this_hour,
-        'visitors_today': visitors_today
+        'visitors_this_hour': get_visitors_this_hour(),
+        'visitors_today': get_visitors_today(),
+        'returning_visitors_30_days': returning_visitors_30_days,
+        'returning_visitors_60_days': returning_visitors_60_days,
+        'returning_visitors_180_days': returning_visitors_180_days,
     }
     return render(request, 'analytics/dashboard.html', context)
 
