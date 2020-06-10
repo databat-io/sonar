@@ -47,20 +47,35 @@ def get_visitors_this_hour():
         return int(r.get('visitors-this-hour'))
 
 
+def get_returning_vistors(days=30):
+    current_time = timezone.now()
+    redis_key = 'returning-visitors-{}'.format(days)
+
+    if not r.get(redis-key):
+        returning_visitors = Device.objects.filter(
+            ignore=False,
+            seen_within_geofence=True,
+            seen_last__gte=current_time - timedelta(days=1),
+            seen_first__gte=current_time - timedelta(days=days),
+            seen_first__lte=current_time - timedelta(days=1)
+        ).count()
+        r.set(redis-key, returning_visitors)
+        r.expire(redis-key, 60*15)
+    else:
+        return int(r.get(redis-key))
+
+
+
 def dashboard(request, *args, **kwargs):
     page_title = "Dashboard"
-
-    returning_visitors_30_days = 0
-    returning_visitors_60_days = 0
-    returning_visitors_180_days = 0
 
     context = {
         'page_title': page_title,
         'visitors_this_hour': get_visitors_this_hour(),
         'visitors_today': get_visitors_today(),
-        'returning_visitors_30_days': returning_visitors_30_days,
-        'returning_visitors_60_days': returning_visitors_60_days,
-        'returning_visitors_180_days': returning_visitors_180_days,
+        'returning_visitors_30_days': get_returning_visitors(days=30),
+        'returning_visitors_60_days': get_returning_visitors(days=60),
+        'returning_visitors_180_days': get_returning_visitors(days=180),
     }
     return render(request, 'analytics/dashboard.html', context)
 
