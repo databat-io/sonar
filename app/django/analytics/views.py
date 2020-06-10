@@ -47,7 +47,7 @@ def get_visitors_this_hour():
         return int(r.get('visitors-this-hour'))
 
 
-def get_returning_vistors(days=30):
+def get_returning_visitors(days=30):
     current_time = timezone.now()
     redis_key = 'returning-visitors-{}'.format(days)
 
