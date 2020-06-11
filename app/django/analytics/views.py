@@ -9,14 +9,11 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.shortcuts import render, render_to_response, reverse, redirect
 from django.utils import timezone
-import redis
+from django.db.models import Count
+from collector.lib import redis_helper
 
-r = redis.Redis(
-        host=settings.REDIS_HOST,
-        port=settings.REDIS_PORT,
-        db=settings.REDIS_DATABASE
-)
 
+r = redis_helper.redis_connection(decode=True)
 
 def get_visitors(days=1):
     cutoff = timezone.now() - timedelta(days=days)
@@ -31,7 +28,7 @@ def get_visitors(days=1):
         r.expire(redis_key, 60*10)
         return visitors
     else:
-        return int(r.get(redis_key))
+        return r.get(redis_key)
 
 
 def get_visitors_this_hour():
@@ -47,7 +44,7 @@ def get_visitors_this_hour():
         r.expire('visitors-this-hour', 60*5)
         return visitors_this_hour
     else:
-        return int(r.get('visitors-this-hour'))
+        return r.get('visitors-this-hour')
 
 
 def get_returning_visitors(days=30):
@@ -70,6 +67,17 @@ def get_returning_visitors(days=30):
         return int(r.get(redis_key))
 
 
+def get_top_3_manufacturers():
+    top_manufacturers = Device.objects.values('device_manufacturer').annotate(count=Count('device_manufacturer')).order_by('-count').exclude(device_manufacturer='Unknown').exclude(seen_within_geofence=False).filter(seen_last__gte=timezone.now()-timedelta(days=7))
+    if len(top_manufacturers) > 2:
+        return [
+            top_manufacturers[0]['device_manufacturer'],
+            top_manufacturers[1]['device_manufacturer'],
+            top_manufacturers[2]['device_manufacturer']
+        ]
+    else:
+        return ['No data available yet!']
+
 
 def dashboard(request, *args, **kwargs):
     page_title = "Dashboard"
@@ -87,6 +95,7 @@ def dashboard(request, *args, **kwargs):
         'returning_visitors_30_days': get_returning_visitors(days=30),
         'returning_visitors_60_days': get_returning_visitors(days=60),
         'returning_visitors_180_days': get_returning_visitors(days=180),
+        'top_3_manufacturers': get_top_3_manufacturers(),
     }
     return render(request, 'analytics/dashboard.html', context)
 
@@ -215,7 +224,7 @@ def day_view(request, year, month, day):
             'yAxis': {
                 'min': 0,
                 'title': {
-                    'text': 'Devices discovered',
+                    'text': 'Estimated foot traffic',
                     'style': {
                         'fontFamily': '"Open Sans", sans-serif',
                         'color': '#7e8e9f',

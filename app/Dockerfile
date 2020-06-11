@@ -5,13 +5,17 @@ RUN install_packages \
     bluez-firmware \
     build-essential \
     libpq-dev \
-    python3-pip \
     python3-dev \
+    python3-pip \
     python3-smbus \
-    libglib2.0-dev
+    libglib2.0-dev \
+    wget
 
 # Set our working directory
 WORKDIR /usr/src/app
+
+# Fetch the latest Bluetooth company IDs
+RUN wget https://raw.githubusercontent.com/NordicSemiconductor/bluetooth-numbers-database/master/v1/company_ids.json
 
 # Upgrade pip and setuptools
 RUN pip3 install --upgrade pip

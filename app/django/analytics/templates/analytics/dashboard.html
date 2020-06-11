@@ -2,6 +2,7 @@
 
 {% load staticfiles %}
 {% load analytics_extras %}
+{% load humanize %}
 
 {% block page_title %}
 {{ page_title }}
@@ -38,9 +39,9 @@
                         <p class="title"> Today </p>
                         <div>
                             <ul class="item-list">
-                                <i>{{ visitors_this_hour }} this hour</i>
-                                <i>{{ visitors_today }} today</i>
-                                <i>{{ visitors_this_week }} this week</i>
+                                <i>{{ visitors_this_hour|intcomma }} this hour</i>
+                                <i>{{ visitors_today|intcomma }} today</i>
+                                <i>{{ visitors_this_week|intcomma }} this week</i>
                             </ul>
                         </div>
                     </div>
@@ -58,9 +59,49 @@
                         <p class="title"> Returning </p>
                         <div>
                             <ul class="item-list">
-                                <i>{{ returning_visitors_30_days }} within 30 days</i>
-                                <i>{{ returning_visitors_60_days }} within 60 days</i>
-                                <i>{{ returning_visitors_180_days }} within 180 days</i>
+                                <i>{{ returning_visitors_30_days|intcomma }} within 30 days</i>
+                                <i>{{ returning_visitors_60_days|intcomma }} within 60 days</i>
+                                <i>{{ returning_visitors_180_days|intcomma }} within 180 days</i>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.card -->
+        </div>
+        <!-- /.col-xl-6 -->
+    </div>
+    <div class="row sameheight-container">
+        <div class="col-xl-6">
+            <div class="card card-default">
+
+                <div class="card-header">
+                    <div class="header-block">
+                        <i class="fa fa-mobile" aria-hidden="true"></i>
+                        <p class="title"> Top Devices </p>
+                        <div>
+                            <ul class="item-list">
+                                {% for device in top_3_manufacturers %}
+                                <i>{{ device }}</i>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.card -->
+        </div>
+        <!-- /.col-xl-6 -->
+        <div class="col-xl-6">
+            <div class="card card-default">
+
+                <div class="card-header">
+                    <div class="header-block">
+                        <i class="fa fa-star" aria-hidden="true"></i>
+                        <p class="title"> Dwell </p>
+                        <div>
+                            <ul class="item-list">
+                                <i>Coming soon!</i>
                             </ul>
                         </div>
                     </div>
