@@ -44,7 +44,7 @@ def lookup_bluetooth_manufacturer(manufacturer):
     manufacturer_in_decimal = int(altered_manufacturer, 16)
     redis_key = 'manufacturer-{}'.format(manufacturer_in_decimal)
     lookup_result = 'Unknown'
-    redis_lookup = r.get(redis_key).decode('utf-8')
+    redis_lookup = r.get(redis_key)
 
     if not redis_lookup:
         with open('company_ids.json', 'r') as company_ids:
