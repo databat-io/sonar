@@ -69,11 +69,14 @@ def get_returning_visitors(days=30):
 
 def get_top_3_manufacturers():
     top_manufacturers = Device.objects.values('device_manufacturer').annotate(count=Count('device_manufacturer')).order_by('-count').exclude(device_manufacturer='Unknown').exclude(seen_within_geofence=False).filter(seen_last__gte=timezone.now()-timedelta(days=7))
-    return [
-        top_manufacturers[0]['device_manufacturer'],
-        top_manufacturers[1]['device_manufacturer'],
-        top_manufacturers[2]['device_manufacturer']
-    ]
+    if len(top_manufacturers) > 2:
+        return [
+            top_manufacturers[0]['device_manufacturer'],
+            top_manufacturers[1]['device_manufacturer'],
+            top_manufacturers[2]['device_manufacturer']
+        ]
+    else:
+        return ['No data available yet!']
 
 
 def dashboard(request, *args, **kwargs):
