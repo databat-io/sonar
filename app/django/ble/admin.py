@@ -31,7 +31,7 @@ class DeviceAdmin(admin.ModelAdmin):
 
     ordering = ('-seen_last',)
     readonly_fields = (
-        'device_type'
+        'device_type',
         'seen_first',
         'seen_last',
         'seen_counter',
