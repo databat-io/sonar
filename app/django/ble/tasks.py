@@ -39,9 +39,7 @@ def populate_device(device):
     if int(device.rssi) < settings.SENSITIVITY:
         obj.seen_within_geofence = True
 
-    if obj.seen_counter > settings.DEVICE_IGNORE_THRESHOLD:
-        obj.ignore_list = True
-
+    obj.ignore = obj.seen_counter > settings.DEVICE_IGNORE_THRESHOLD
     obj.seen_last = timezone.now()
     obj.scanrecord_set.create(rssi=device.rssi)
     obj.save()
