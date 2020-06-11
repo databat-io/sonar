@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.shortcuts import render, render_to_response, reverse, redirect
 from django.utils import timezone
+from django.db.models import Count
 from collector.lib import redis_helper
 import requests
 
