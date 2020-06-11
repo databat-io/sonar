@@ -215,7 +215,7 @@ def day_view(request, year, month, day):
             'yAxis': {
                 'min': 0,
                 'title': {
-                    'text': 'Devices discovered',
+                    'text': 'Estimated foot traffic',
                     'style': {
                         'fontFamily': '"Open Sans", sans-serif',
                         'color': '#7e8e9f',
