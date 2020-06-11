@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'chartit',
     'analytics.apps.AnalyticsConfig',
     'ble.apps.BleConfig',
+    'django.contrib.humanize',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
