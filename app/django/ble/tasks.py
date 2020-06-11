@@ -5,15 +5,10 @@ from bluepy.btle import ScanEntry
 from celery import task
 from django.conf import settings
 from django.utils import timezone
+from collector.lib import redis_helper
 import requests
-import redis
 
-r = redis.Redis(
-        host=settings.REDIS_HOST,
-        port=settings.REDIS_PORT,
-        db=settings.REDIS_DATABASE
-)
-
+r = redis_helper.redis_connection(decode=True)
 
 def get_error_counter():
     """
@@ -22,7 +17,7 @@ def get_error_counter():
     """
     counter = r.get('btle-error')
     if counter:
-        return int(counter)
+        return counter
     return 0
 
 

@@ -1,15 +1,10 @@
 from bluepy.btle import Scanner, DefaultDelegate, BTLEManagementError
 from django.conf import settings
+from collector.lib import redis_helper
 import json
-import redis
 
 LOCK_NAME = 'btle-lock'
-r = redis.Redis(
-    host=settings.REDIS_HOST,
-    port=settings.REDIS_PORT,
-    db=settings.REDIS_DATABASE
-)
-
+r = redis_helper.redis_connection()
 
 def set_lock(timeout):
     if r.get(LOCK_NAME):
@@ -49,7 +44,7 @@ def lookup_bluetooth_manufacturer(manufacturer):
     manufacturer_in_decimal = int(altered_manufacturer, 16)
     redis_key = 'manufacturer-{}'.format(manufacturer_in_decimal)
     lookup_result = 'Unknown'
-    redis_lookup = r.get(redis_key)
+    redis_lookup = r.get(redis_key).decode('utf-8')
 
     if not redis_lookup:
         with open('company_ids.json', 'r') as company_ids:

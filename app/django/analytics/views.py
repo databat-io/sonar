@@ -9,14 +9,10 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.shortcuts import render, render_to_response, reverse, redirect
 from django.utils import timezone
-import redis
+from collector.lib import redis_helper
+import requests
 
-r = redis.Redis(
-        host=settings.REDIS_HOST,
-        port=settings.REDIS_PORT,
-        db=settings.REDIS_DATABASE
-)
-
+r = redis_helper.redis_connection(decode=True)
 
 def get_visitors(days=1):
     cutoff = timezone.now() - timedelta(days=days)
@@ -31,7 +27,7 @@ def get_visitors(days=1):
         r.expire(redis_key, 60*10)
         return visitors
     else:
-        return int(r.get(redis_key))
+        return r.get(redis_key)
 
 
 def get_visitors_this_hour():
@@ -47,7 +43,7 @@ def get_visitors_this_hour():
         r.expire('visitors-this-hour', 60*5)
         return visitors_this_hour
     else:
-        return int(r.get('visitors-this-hour'))
+        return r.get('visitors-this-hour')
 
 
 def get_returning_visitors(days=30):
