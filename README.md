@@ -22,7 +22,6 @@ The primary use case is to monitor foot traffic in commercial environments where
 ## Roadmap
 
 * Add support for listening on WiFi traffic ([#10](https://github.com/databat-io/sonar/issues/10))
-* Enrich the statistics with vendor information ([#26](https://github.com/databat-io/sonar/issues/26))
 * Integrate with existing solutions, such as Unifi Controller ([#23](https://github.com/databat-io/sonar/issues/23))
 
 ## Screenshots
