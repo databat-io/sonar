@@ -4,7 +4,7 @@ from collector.lib import redis_helper
 import json
 
 LOCK_NAME = 'btle-lock'
-r = redis_helper.redis_connection()
+r = redis_helper.redis_connection(decode=True)
 
 def set_lock(timeout):
     if r.get(LOCK_NAME):

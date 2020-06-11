@@ -70,6 +70,48 @@
         </div>
         <!-- /.col-xl-6 -->
     </div>
+    <div class="row sameheight-container">
+        <div class="col-xl-6">
+            <div class="card card-default">
+
+                <div class="card-header">
+                    <div class="header-block">
+                        <i class="fa fa-mobile" aria-hidden="true"></i>
+                        <p class="title"> Devices </p>
+                        <div>
+                            <ul class="item-list">
+                                {% for device in top_3_manufacturers %}
+                                <i>{{ device['device_manufacturer'] }}</i>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.card -->
+        </div>
+        <!-- /.col-xl-6 -->
+        <div class="col-xl-6">
+            <div class="card card-default">
+
+                <div class="card-header">
+                    <div class="header-block">
+                        <i class="fa fa-heart" aria-hidden="true"></i>
+                        <p class="title"> Placeholder </p>
+                        <div>
+                            <ul class="item-list">
+                                <i>foo</i>
+                                <i>foo</i>
+                                <i>foo</i>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.card -->
+        </div>
+        <!-- /.col-xl-6 -->
+    </div>
 </section>
 
 {% endblock body %}

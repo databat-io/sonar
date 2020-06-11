@@ -66,6 +66,10 @@ def get_returning_visitors(days=30):
         return int(r.get(redis_key))
 
 
+def get_top_3_manufacturers():
+    top_manufacturers = Device.objects.values('device_manufacturer').annotate(count=Count('device_manufacturer')).order_by('-count').exclude(device_manufacturer='Unknown').exclude(seen_within_geofence=False).filter(seen_last__gte=timezone.now()-timedelta(days=7))
+    return top_manufacturers[0:3]
+
 
 def dashboard(request, *args, **kwargs):
     page_title = "Dashboard"
@@ -83,6 +87,7 @@ def dashboard(request, *args, **kwargs):
         'returning_visitors_30_days': get_returning_visitors(days=30),
         'returning_visitors_60_days': get_returning_visitors(days=60),
         'returning_visitors_180_days': get_returning_visitors(days=180),
+        'top_3_manufacturers': get_top_3_manufacturers(),
     }
     return render(request, 'analytics/dashboard.html', context)
 
