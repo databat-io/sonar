@@ -1,4 +1,4 @@
-FROM balenalib/raspberrypi3-python:3
+FROM balenalib/raspberrypi3-python
 
 RUN install_packages \
     bluez \
