@@ -25,6 +25,7 @@ class DeviceAdmin(admin.ModelAdmin):
         'seen_last',
         'seen_first',
         'seen_counter',
+        'device_manufacturer',
         'seen_within_geofence',
     ]
 
@@ -32,6 +33,7 @@ class DeviceAdmin(admin.ModelAdmin):
     readonly_fields = (
         'seen_first',
         'seen_last',
+        'device_manufacturer',
         'seen_within_geofence',
         'device_address',
     )
