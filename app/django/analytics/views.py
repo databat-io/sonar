@@ -11,7 +11,6 @@ from django.utils import timezone
 from django.db.models import Count
 from collector.lib import redis_helper
 
-
 r = redis_helper.redis_connection(decode=True)
 
 

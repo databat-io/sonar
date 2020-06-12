@@ -32,7 +32,6 @@ The primary use case is to monitor foot traffic in commercial environments where
 
 ![Daily View](/img/sonar_daily_view.png?raw=true)
 
-
 ## Digital Signage Integration
 
 Sonar also comes with a Digital Signage integration out-of-the-box. This should be compatible with most digital signage solutions, such as [Screenly](https://screenly.io).
