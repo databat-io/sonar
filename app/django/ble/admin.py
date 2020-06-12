@@ -22,11 +22,12 @@ class DeviceAdmin(admin.ModelAdmin):
 
     list_display = [
         'device_address',
+        'device_type',
         'seen_last',
         'seen_first',
         'seen_counter',
         'device_manufacturer',
-        'device_manufacturer_string_raw',
+        'device_fingerprint',
         'seen_within_geofence',
     ]
 
@@ -36,6 +37,7 @@ class DeviceAdmin(admin.ModelAdmin):
         'seen_first',
         'seen_last',
         'seen_counter',
+        'device_fingerprint',
         'device_manufacturer',
         'device_manufacturer_string_raw',
         'seen_within_geofence',
