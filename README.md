@@ -33,6 +33,14 @@ The primary use case is to monitor foot traffic in commercial environments where
 ![Daily View](/img/sonar_daily_view.png?raw=true)
 
 
+## Digital Signage Integration
+
+Sonar also comes with a Digital Signage integration out-of-the-box. This should be compatible with most digital signage solutions, such as [Screenly](https://screenly.io).
+
+All you need to do is to display the URL `/analytics/signage/`, which will be dynamically updated based on your set capacity threshold (see `CAPACITY_THRESHOLD` in the configuration section).
+
+![Digital Signage integration](/img/signage-integration.png?raw=true)
+
 ## Supported hardware
 
  * Raspberry Pi 3/3+ Model B
@@ -71,22 +79,24 @@ Once the build is done, the device will automatically pull down the image and st
 
 The following environment variables can be used to modify the behavior:
 
-| Environment Variable    | Default Value | Description                                                                                                                                    |
-| -------------           | ------------  | -----                                                                                                                                          |
+| Environment Variable    | Default Value | Description                                                                                                                            |
+| -------------           | ------------  | -----                                                                                                                                  |
 | ALLOWED_HOSTS           |               | Use this to add additional hostname/IPs. Use '\|' as the separator for multiple entries. The Balena public hostname is whitelisted by default. |
-| DEBUG                   | 0             | Set to '1' to enable debug mode.                                                                                                               |
-| DEV_MODE                | 0             | Set to '1' enable development mode.                                                                                                            |
-| DISABLE_ANALYTICS       | 0             | Set to '1' to disable processing of analytics.                                                                                                 |
-| DISABLE_SCANNING        | 0             | Set to '1' to disable Bluetooth scanning (useful for processing node).                                                                         |
-| DJANGO_SECRET           |               | Set this to a random string. You can use something like [djecrety.ir/](https://djecrety.ir), or generate it by hand.                           |
-| POSTGRES_DATABASE       | sonar         | Set the PostgreSQL database.                                                                                                                   |
-| POSTGRES_HOST           |               | Set the PostgreSQL hostname.                                                                                                                   |
-| POSTGRES_PASSWORD       |               | Set the PostgreSQL password.                                                                                                                   |
-| POSTGRES_USER           | sonar         | Set the PostgreSQL username.                                                                                                                   |
-| RETENTION_PERIOD        | 180           | Retention period (in days) to store detected devices. Set to 0 to disable.                                                                     |
-| SENSITIVITY             | -100          | Set this to a value between 0 and -250 to calibrate the sensitivity. The higher (negative) value, fewer devices will be counted.               |
-| USE_POSTGRES            | 0             | Set to '1' to use PostgreSQL as the database.                                                                                                  |
-| DEVICE_IGNORE_THRESHOLD | 5000          | Set this to increase or decrease the threshold for how many times a given device has to be seen before being added to the ignore list.         |
+| DEBUG                   | 0             | Set to '1' to enable debug mode.                                                                                                       |
+| DEV_MODE                | 0             | Set to '1' enable development mode.                                                                                                    |
+| DISABLE_ANALYTICS       | 0             | Set to '1' to disable processing of analytics.                                                                                         |
+| DISABLE_SCANNING        | 0             | Set to '1' to disable Bluetooth scanning (useful for processing node).                                                                 |
+| DJANGO_SECRET           |               | Set this to a random string. You can use something like [djecrety.ir/](https://djecrety.ir), or generate it by hand.                   |
+| POSTGRES_DATABASE       | sonar         | Set the PostgreSQL database.                                                                                                           |
+| POSTGRES_HOST           |               | Set the PostgreSQL hostname.                                                                                                           |
+| POSTGRES_PASSWORD       |               | Set the PostgreSQL password.                                                                                                           |
+| POSTGRES_USER           | sonar         | Set the PostgreSQL username.                                                                                                           |
+| RETENTION_PERIOD        | 180           | Retention period (in days) to store detected devices. Set to 0 to disable.                                                             |
+| SENSITIVITY             | -100          | Set this to a value between 0 and -250 to calibrate the sensitivity. The higher (negative) value, fewer devices will be counted.       |
+| USE_POSTGRES            | 0             | Set to '1' to use PostgreSQL as the database.                                                                                          |
+| DEVICE_IGNORE_THRESHOLD | 5000          | Set this to increase or decrease the threshold for how many times a given device has to be seen before being added to the ignore list. |
+| CAPACITY_THRESHOLD      | 10            | This threshold is to control the signage page (/analytics/signage).                                                                    |
+
 
 If you're using Raspbian, the easiest way to use environment is to use [override](https://docs.docker.com/compose/extends/) feature. In Balena, you use the built-in environment variable feature.
 
