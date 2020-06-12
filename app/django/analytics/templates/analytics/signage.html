@@ -1,0 +1,58 @@
+
+<html>
+<head>
+{% load staticfiles %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Sonar Signage Integration</title>
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/vendor.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tempusdominus-bootstrap-4.min.css' %}" />
+<style>
+body {
+    background-color:#CFCCD6
+}
+.flex-container {
+    display: flex;
+    align-items: center; /* Vertical center alignment */
+    justify-content: center; /* Horizontal center alignment */
+}
+.icon-color {
+    color:{{icon_color}};
+}
+</style>
+</head>
+<body>
+    <div class="container">
+    <div class="row h-50">
+        <div class="col-md-12">
+            <div class="jumbotron text-center" style="background-color:#CFCCD6">
+                <h1>
+                    Social Distancing Monitor
+                </h1>
+                <p>Real time data from our social distancing monitor to ensure your safety.</p>
+            </div>
+            <div class="row flex-container h-100">
+                <div class="col-md-3 text-center" >
+                    <p><i class="fa {{ icon }} fa-5x icon-color" aria-hidden="true"></i></p>
+                </div>
+                <div class="col-md-6 display-3">
+                    <p><span>{{ message }}</span></p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <div>
+                        <p>Powered by Sonar from <a href="https://databat.io">Databat.io<a>.</p>
+                    </div>
+                    <div>
+                    <img src="/static/img/bat.svg" height=50px>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

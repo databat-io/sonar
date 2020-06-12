@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from .forms import DayReportForm, MonthReportForm
 from .helpers.helpers import chart_format_day_str, chart_format_month_str
@@ -12,42 +11,27 @@ from django.utils import timezone
 from django.db.models import Count
 from collector.lib import redis_helper
 
-
 r = redis_helper.redis_connection(decode=True)
 
-def get_visitors(days=1):
-    cutoff = timezone.now() - timedelta(days=days)
-    redis_key = 'visitors-days-{}'.format(days)
+
+def get_visitors_since(days=1, hours=0, minutes=0, cache=10):
+    cutoff = timezone.now() - timedelta(days=days, hours=hours, minutes=minutes)
+    redis_key = 'visitors-days-{}-hours-{}-minutes-{}'.format(days, hours, minutes)
 
     if not r.get(redis_key):
         visitors = ScanRecord.objects.filter(
-            timestamp__date__gte=cutoff.date(),
+            timestamp__gte=cutoff,
+            device__ignore=False,
             rssi__lte=settings.SENSITIVITY
         ).count()
         r.set(redis_key, visitors)
-        r.expire(redis_key, 60*10)
+        r.expire(redis_key, 60*cache)
         return visitors
     else:
         return r.get(redis_key)
 
 
-def get_visitors_this_hour():
-    current_time = timezone.now()
-
-    if not r.get('visitors-this-hour'):
-        visitors_this_hour = ScanRecord.objects.filter(
-            timestamp__date=current_time.date(),
-            timestamp__hour=current_time.hour,
-            rssi__lte=settings.SENSITIVITY
-        ).count()
-        r.set('visitors-this-hour', visitors_this_hour)
-        r.expire('visitors-this-hour', 60*5)
-        return visitors_this_hour
-    else:
-        return r.get('visitors-this-hour')
-
-
-def get_returning_visitors(days=30):
+def get_returning_visitors_since(days=30):
     current_time = timezone.now()
     redis_key = 'returning-visitors-{}'.format(days)
 
@@ -86,15 +70,21 @@ def dashboard(request, *args, **kwargs):
         monday = timezone.now() - timedelta(days=timezone.now().weekday() % 7)
         return (timezone.now() - monday).days
 
-
     context = {
         'page_title': page_title,
-        'visitors_this_hour': get_visitors_this_hour(),
-        'visitors_today': get_visitors(days=0),
-        'visitors_this_week': get_visitors(days=days_since_start_of_week()),
-        'returning_visitors_30_days': get_returning_visitors(days=30),
-        'returning_visitors_60_days': get_returning_visitors(days=60),
-        'returning_visitors_180_days': get_returning_visitors(days=180),
+        'visitors_this_hour': get_visitors_since(
+            minutes=timezone.now().minute,
+            days=0,
+            cache=5
+        ),
+        'visitors_today': get_visitors_since(
+            hours=timezone.now().hour,
+            days=0
+        ),
+        'visitors_this_week': get_visitors_since(days=days_since_start_of_week()),
+        'returning_visitors_30_days': get_returning_visitors_since(days=30),
+        'returning_visitors_60_days': get_returning_visitors_since(days=60),
+        'returning_visitors_180_days': get_returning_visitors_since(days=180),
         'top_3_manufacturers': get_top_3_manufacturers(),
     }
     return render(request, 'analytics/dashboard.html', context)
@@ -135,7 +125,7 @@ def report(request, *args, **kwargs):
             if day_form.is_valid():
                 return redirect(reverse('day_view', kwargs=day_form.cleaned_data['day_selected']))
             else:
-                pass # And re-render the template with form errors (done below)
+                pass  # And re-render the template with form errors (done below)
 
         elif month_report_submitted:
             month_form = MonthReportForm(request.POST)
@@ -143,7 +133,7 @@ def report(request, *args, **kwargs):
             if month_form.is_valid():
                 return redirect(reverse('month_view', kwargs=month_form.cleaned_data['month_selected']))
             else:
-                pass # And re-render the template with form errors (done below)
+                pass  # And re-render the template with form errors (done below)
 
     context = {
         'page_title': page_title,
@@ -356,6 +346,45 @@ def month_view(request, year, month):
     return render_to_response(
         'analytics/graph.html',
         context=context
+    )
+
+
+def signage(request, *args, **kwargs):
+    page_title = "Sonar Signage Page"
+
+    def get_payload(state):
+        if state == 'green':
+            return {
+                'icon_color': '#84b708',
+                'icon': 'fa-thumbs-up',
+                'message': 'You are OK to enter.'
+            }
+        elif state == 'orange':
+            return {
+                'icon_color': '#f3790c',
+                'icon': 'fa-exclamation-circle',
+                'message': 'We are almost at capacity.'
+            }
+        elif state == 'red':
+            return {
+                'icon_color': '#e71822',
+                'icon': 'fa-exclamation-triangle',
+                'message': 'Do not enter! We are above our capacity.'
+            }
+
+    visitors = get_visitors_since(days=0, hours=0, minutes=15, cache=5)
+
+    if visitors >= settings.CAPACITY_THRESHOLD:
+        payload = get_payload('red')
+    elif visitors >= settings.CAPACITY_THRESHOLD * .8:
+        payload = get_payload('orange')
+    else:
+        payload = get_payload('green')
+
+    payload['page_title'] = page_title
+
+    return render_to_response(
+        'analytics/signage.html', context=payload
     )
 
 

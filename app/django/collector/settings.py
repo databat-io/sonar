@@ -52,7 +52,11 @@ RETENTION_PERIOD = int(os.getenv('RETENTION_PERIOD', 180))
 # the fewer devices will be picked up.
 SENSITIVITY = int(os.getenv('SENSITIVITY', -100))
 
+# The amount a device can be seen before being ignored
 DEVICE_IGNORE_THRESHOLD = int(os.getenv('DEVICE_IGNORE_THRESHOLD', 5000))
+
+# The threshold used for the signage page
+CAPACITY_THRESHOLD = int(os.getenv('CAPACITY_THRESHOLD', 10))
 
 ALLOWED_HOSTS = []
 
