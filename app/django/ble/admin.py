@@ -20,6 +20,12 @@ class ScanRecordAdmin(admin.ModelAdmin):
 class DeviceAdmin(admin.ModelAdmin):
     model = Device
 
+    list_filter = (
+        'seen_within_geofence',
+        'ignore',
+        'device_type',
+    )
+
     list_display = [
         'device_address',
         'device_type',
