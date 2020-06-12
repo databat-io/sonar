@@ -26,6 +26,7 @@ class DeviceAdmin(admin.ModelAdmin):
         'seen_first',
         'seen_counter',
         'device_manufacturer',
+        'device_manufacturer_string_raw',
         'seen_within_geofence',
     ]
 
@@ -36,6 +37,7 @@ class DeviceAdmin(admin.ModelAdmin):
         'seen_last',
         'seen_counter',
         'device_manufacturer',
+        'device_manufacturer_string_raw',
         'seen_within_geofence',
         'ignore',
         'device_address',
