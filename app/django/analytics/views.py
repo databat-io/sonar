@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from .forms import DayReportForm, MonthReportForm
 from .helpers.helpers import chart_format_day_str, chart_format_month_str
@@ -15,13 +14,15 @@ from collector.lib import redis_helper
 
 r = redis_helper.redis_connection(decode=True)
 
+
 def get_visitors_since(days=1, hours=0, minutes=0, cache=10):
     cutoff = timezone.now() - timedelta(days=days, hours=hours, minutes=minutes)
-    redis_key = 'visitors-days-{}-hours-{}-minutes-{}'.format(days,hours,minutes)
+    redis_key = 'visitors-days-{}-hours-{}-minutes-{}'.format(days, hours, minutes)
 
     if not r.get(redis_key):
         visitors = ScanRecord.objects.filter(
-            timestamp__date__gte=cutoff.date(),
+            timestamp__gte=cutoff,
+            device__ignore=False,
             rssi__lte=settings.SENSITIVITY
         ).count()
         r.set(redis_key, visitors)
@@ -69,7 +70,6 @@ def dashboard(request, *args, **kwargs):
     def days_since_start_of_week():
         monday = timezone.now() - timedelta(days=timezone.now().weekday() % 7)
         return (timezone.now() - monday).days
-
 
     context = {
         'page_title': page_title,
@@ -126,7 +126,7 @@ def report(request, *args, **kwargs):
             if day_form.is_valid():
                 return redirect(reverse('day_view', kwargs=day_form.cleaned_data['day_selected']))
             else:
-                pass # And re-render the template with form errors (done below)
+                pass  # And re-render the template with form errors (done below)
 
         elif month_report_submitted:
             month_form = MonthReportForm(request.POST)
@@ -134,7 +134,7 @@ def report(request, *args, **kwargs):
             if month_form.is_valid():
                 return redirect(reverse('month_view', kwargs=month_form.cleaned_data['month_selected']))
             else:
-                pass # And re-render the template with form errors (done below)
+                pass  # And re-render the template with form errors (done below)
 
     context = {
         'page_title': page_title,
