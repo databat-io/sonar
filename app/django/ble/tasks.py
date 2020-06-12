@@ -41,6 +41,7 @@ def populate_device(device):
         obj.seen_within_geofence = True
 
     obj.ignore = obj.seen_counter > settings.DEVICE_IGNORE_THRESHOLD
+    obj.device_fingerprint = ble_helper.build_device_fingerprint(device)
     obj.seen_last = timezone.now()
     obj.scanrecord_set.create(rssi=device.rssi)
     obj.save()

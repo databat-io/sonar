@@ -1,6 +1,7 @@
 from bluepy.btle import Scanner, DefaultDelegate, BTLEManagementError
 from django.conf import settings
 from collector.lib import redis_helper
+import hashlib
 import json
 
 LOCK_NAME = 'btle-lock'
@@ -36,12 +37,14 @@ def lookup_bluetooth_manufacturer(manufacturer):
     We need to do a fair bit of juggling here, but the goal is to
     return the manufacturer based on the data we captured.
 
-    We need to swap around the result (see https://stackoverflow.com/questions/23626871/list-of-company-ids-for-manufacturer-specific-data-in-ble-advertising-packets#comment36359241_23626871)
-    and then convert it to decimal in order to look it up from the Nordic database.
+    We need to swap around the result [1] and then convert it to
+    decimal in order to look it up from the Nordic database.
+
+    [1] https://stackoverflow.com/questions/23626871/list-of-company-ids-for-manufacturer-specific-data-in-ble-advertising-packets#comment36359241_23626871
     """
 
-    altered_manufacturer = '0x{}{}'.format(manufacturer[2:4], manufacturer[0:2])
-    manufacturer_in_decimal = int(altered_manufacturer, 16)
+    shuffled_manufacturer = '0x{}{}'.format(manufacturer[2:4], manufacturer[0:2])
+    manufacturer_in_decimal = int(shuffled_manufacturer, 16)
     redis_key = 'manufacturer-{}'.format(manufacturer_in_decimal)
     lookup_result = 'Unknown'
     redis_lookup = r.get(redis_key)
@@ -58,6 +61,51 @@ def lookup_bluetooth_manufacturer(manufacturer):
     else:
         return redis_lookup
 
+
+def build_device_fingerprint(device):
+    """
+    Because BLE devices (type: random), re-generates the MAC address,
+    we won't be able to track returning visitors. We need to attempt
+    to build a footprint instead based on metadata from the GAP payload [1].
+
+    Some additional insperation can also be found here [2].
+
+
+    [1] https://www.bluetooth.com/specifications/assigned-numbers/generic-access-profile/
+    [2] https://hal.inria.fr/hal-02359914/document
+    """
+
+    fingerprint = ''
+
+    # Start by the first two octets of the manufacturer
+    if device.getValue(255):
+        fingerprint += device.getValueText(255)[0:4]
+
+    # Flags
+    if device.getValue(1):
+        fingerprint += device.getValueText(1)
+
+    # TX Power
+    if device.getValue(10):
+        fingerprint += device.getValueText(10)
+
+    # Incomplete 16b Services
+    if device.getValue(2):
+        fingerprint += device.getValueText(2)
+
+    # Incomplete 128b Services
+    if device.getValue(6):
+        fingerprint += device.getValueText(6)
+
+    # Complete Local Name
+    if device.getValue(9):
+        fingerprint += device.getValueText(9)
+
+    # Short Local Name
+    if device.getValue(8):
+        fingerprint += device.getValueText(8)
+
+    return hashlib.sha256(fingerprint.encode()).hexdigest()
 
 def scan_for_btle_devices(timeout=30):
     class ScanDelegate(DefaultDelegate):
