@@ -28,7 +28,6 @@ class DeviceAdmin(admin.ModelAdmin):
 
     list_display = [
         'device_address',
-        'device_type',
         'seen_last',
         'seen_first',
         'seen_counter',
