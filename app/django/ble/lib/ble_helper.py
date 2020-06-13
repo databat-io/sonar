@@ -81,29 +81,35 @@ def build_device_fingerprint(device):
     if device.getValue(255):
         fingerprint += device.getValueText(255)[0:4]
 
-    # Flags
-    if device.getValue(1):
-        fingerprint += device.getValueText(1)
+    # If the device type is public, we know it should be static,
+    # so no need to go on. If however it is 'random', we need to
+    # feed other random metadata to try to establish a fingerprint.
+    if device.addrType == 'public':
+        fingerprint += device.addr
+    else:
+        # Flags
+        if device.getValue(1):
+            fingerprint += device.getValueText(1)
 
-    # TX Power
-    if device.getValue(10):
-        fingerprint += device.getValueText(10)
+        # TX Power
+        if device.getValue(10):
+            fingerprint += device.getValueText(10)
 
-    # Incomplete 16b Services
-    if device.getValue(2):
-        fingerprint += device.getValueText(2)
+        # Incomplete 16b Services
+        if device.getValue(2):
+            fingerprint += device.getValueText(2)
 
-    # Incomplete 128b Services
-    if device.getValue(6):
-        fingerprint += device.getValueText(6)
+        # Incomplete 128b Services
+        if device.getValue(6):
+            fingerprint += device.getValueText(6)
 
-    # Complete Local Name
-    if device.getValue(9):
-        fingerprint += device.getValueText(9)
+        # Complete Local Name
+        if device.getValue(9):
+            fingerprint += device.getValueText(9)
 
-    # Short Local Name
-    if device.getValue(8):
-        fingerprint += device.getValueText(8)
+        # Short Local Name
+        if device.getValue(8):
+            fingerprint += device.getValueText(8)
 
     return hashlib.sha256(fingerprint.encode()).hexdigest()
 
