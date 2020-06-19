@@ -32,6 +32,9 @@ def purge_old_scan_records():
         print('Retention is disabled.')
 
 
+# @TODO: All these reports need to be updated to
+# use the device_fingerprint once stabilized.
+
 @task
 def ble_generate_hourly_report(date=None):
     """

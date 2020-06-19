@@ -13,7 +13,7 @@ from collector.lib import redis_helper
 
 r = redis_helper.redis_connection(decode=True)
 
-
+# @TODO: Needs to be updated to use device_fingerprint
 def get_visitors_since(days=1, hours=0, minutes=0, cache=10):
     cutoff = timezone.now() - timedelta(days=days, hours=hours, minutes=minutes)
     redis_key = 'visitors-days-{}-hours-{}-minutes-{}'.format(days, hours, minutes)
@@ -30,7 +30,7 @@ def get_visitors_since(days=1, hours=0, minutes=0, cache=10):
     else:
         return r.get(redis_key)
 
-
+# @TODO: Needs to be updated to use device_fingerprint
 def get_returning_visitors_since(days=30):
     current_time = timezone.now()
     redis_key = 'returning-visitors-{}'.format(days)
