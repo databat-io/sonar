@@ -20,12 +20,19 @@ class ScanRecordAdmin(admin.ModelAdmin):
 class DeviceAdmin(admin.ModelAdmin):
     model = Device
 
+    list_filter = (
+        'seen_within_geofence',
+        'ignore',
+        'device_type',
+    )
+
     list_display = [
         'device_address',
         'seen_last',
         'seen_first',
         'seen_counter',
         'device_manufacturer',
+        'device_fingerprint',
         'seen_within_geofence',
     ]
 
@@ -35,7 +42,9 @@ class DeviceAdmin(admin.ModelAdmin):
         'seen_first',
         'seen_last',
         'seen_counter',
+        'device_fingerprint',
         'device_manufacturer',
+        'device_manufacturer_string_raw',
         'seen_within_geofence',
         'ignore',
         'device_address',

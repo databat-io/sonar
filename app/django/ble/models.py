@@ -8,6 +8,8 @@ from django.db import models
 class Device(models.Model):
     device_address = models.CharField(max_length=60)
     device_manufacturer = models.CharField(max_length=60, default='Unknown')
+    device_manufacturer_string_raw = models.CharField(max_length=60, default='')
+    device_fingerprint = models.CharField(max_length=200, default='')
     device_type = models.CharField(max_length=200)
     ignore = models.BooleanField(default=False)
     seen_counter = models.PositiveIntegerField(default=1)
