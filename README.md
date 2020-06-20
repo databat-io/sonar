@@ -96,7 +96,7 @@ The following environment variables can be used to modify the behavior:
 | DEVICE_IGNORE_THRESHOLD | 5000          | Set this to increase or decrease the threshold for how many times a given device has to be seen before being added to the ignore list.         |
 | CAPACITY_THRESHOLD      | 10            | This threshold is to control the signage page (/analytics/signage).                                                                            |
 
-If you're using Raspbian, the easiest way to use environment is to use [override](https://docs.docker.com/compose/extends/) feature. In Balena, you use the built-in environment variable feature.
+If you're using Raspbian, the easiest way to use environment is to use create a file called `.env` in the same directory as the `docker-compose.yml` file with the environment variables (e.g. `FOO=bar`). This will then be loaded automatically. In Balena, you use the built-in environment variable feature.
 
 ## Development
 
