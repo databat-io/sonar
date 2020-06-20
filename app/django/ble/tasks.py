@@ -33,6 +33,7 @@ def populate_device(device):
         'device_type': device.addrType,
         'rssi': device.rssi,
         'seen_counter': 1,
+        'capture_device': settings.DEVICE_ID,
     }
 
 
