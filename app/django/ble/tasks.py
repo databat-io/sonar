@@ -22,6 +22,18 @@ def get_error_counter():
 
 
 def populate_device(device):
+    """
+    Populates the dataset. If Databat is enabled,
+    also submit the payload to Databat's backend.
+    """
+
+    payload = {
+        'timestamp': timezone.now(),
+        'device_type': device.addrType,
+        'rssi': device.rssi,
+        'seen_counter': 1,
+    }
+
 
     obj, created = Device.objects.get_or_create(
             device_address=device.addr,
@@ -29,23 +41,37 @@ def populate_device(device):
     )
 
     if device.getValue(ScanEntry.MANUFACTURER):
-        obj.device_manufacturer = ble_helper.lookup_bluetooth_manufacturer(
+        manufacturer = ble_helper.lookup_bluetooth_manufacturer(
             device.getValueText(ScanEntry.MANUFACTURER)
         )
+        obj.device_manufacturer = manufacturer
+        payload['device_manufacturer'] = device.getValueText(ScanEntry.MANUFACTURER)
+
         obj.device_manufacturer_string_raw = device.getValueText(ScanEntry.MANUFACTURER)
+        payload['device_manufacturer_string_raw'] = device.getValueText(ScanEntry.MANUFACTURER)
 
     if not created:
         obj.seen_counter = obj.seen_counter + 1
+        payload['seen_counter'] = obj.seen_counter
 
     if int(device.rssi) < settings.SENSITIVITY:
         obj.seen_within_geofence = True
 
     obj.ignore = obj.seen_counter > settings.DEVICE_IGNORE_THRESHOLD
-    obj.device_fingerprint = ble_helper.build_device_fingerprint(device)
+
+    device_fingerprint = ble_helper.build_device_fingerprint(device)
+    obj.device_fingerprint = device_fingerprint
+    payload['device_fingerprint'] = device_fingerprint
+
     obj.seen_last = timezone.now()
     obj.scanrecord_set.create(rssi=device.rssi)
     obj.save()
 
+    return payload
+
+@app.task
+def submit_to_databat(payload):
+    print(payload)
 
 @task
 def scan(timeout=30):
@@ -62,15 +88,22 @@ def scan(timeout=30):
             print('Reboot for non-Balena is not implemented yet.')
 
     perform_scan = ble_helper.scan_for_btle_devices(timeout=timeout)
+    result = []
     devices_within_geofence = 0
     if perform_scan:
         for device in ble_helper.scan_for_btle_devices(timeout=timeout):
-            populate_device(device)
+            result.append(
+                populate_device(device)
+            )
+
             if device.rssi < settings.SENSITIVITY:
                 devices_within_geofence = devices_within_geofence + 1
+
         return('Successfully scanned. Found {} devices within the geofence ({} in total).'.format(
             devices_within_geofence,
             len(perform_scan))
         )
+        if settings.DATABAT_API_TOKEN:
+            submit_to_databat(payload)
     else:
         return('Unable to scan for devices.')

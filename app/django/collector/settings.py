@@ -39,6 +39,9 @@ SECRET_KEY = os.getenv(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = string_to_bool(os.getenv('DEBUG', False))
 
+
+DATABAT_API_TOKEN = os.getenv('DATABAT_API_TOKEN', False)
+
 DEV_MODE = string_to_bool(os.getenv('DEV_MODE', False))
 BALENA = os.getenv('BALENA_DEVICE_UUID', False)
 BALENA_SUPERVISOR_ADDRESS = os.getenv('BALENA_SUPERVISOR_ADDRESS')
