@@ -11,4 +11,5 @@ app/django/celerybeat-schedule
 celerybeat-schedule.db
 .DS_Store
 company_ids.json
-.env
+gunicorn.env
+celery.env
