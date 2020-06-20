@@ -6,6 +6,7 @@ from celery import task
 from django.conf import settings
 from django.utils import timezone
 from collector.lib import redis_helper
+import json
 import requests
 
 r = redis_helper.redis_connection(decode=True)
@@ -71,7 +72,12 @@ def populate_device(device):
 
 @task
 def submit_to_databat(payload):
-    print(payload)
+    submit_payload = requests.post(
+        'https://us-central1-databat.cloudfunctions.net/post-record',
+        params = {'api_token': settings.DATABAT_API_TOKEN},
+        data=json.dumps(payload)
+    )
+    return submit_payload
 
 @task
 def scan(timeout=30):
@@ -104,6 +110,6 @@ def scan(timeout=30):
             len(perform_scan))
         )
         if settings.DATABAT_API_TOKEN:
-            submit_to_databat(payload)
+            submit_to_databat.delay(payload)
     else:
         return('Unable to scan for devices.')
