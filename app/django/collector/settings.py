@@ -16,6 +16,7 @@ import random
 import string
 from celery.schedules import crontab
 from distutils.util import strtobool
+from lib import raspberry_pi_helper
 
 
 def string_to_bool(string):
@@ -44,6 +45,7 @@ BALENA_SUPERVISOR_ADDRESS = os.getenv('BALENA_SUPERVISOR_ADDRESS')
 BALENA_SUPERVISOR_API_KEY = os.getenv('BALENA_SUPERVISOR_API_KEY')
 DISABLE_ANALYTICS = string_to_bool(os.getenv('DISABLE_ANALYTICS', False))
 DISABLE_SCANNING = string_to_bool(os.getenv('DISABLE_SCANNING', False))
+DEVICE_ID = raspberry_pi_helper.get_serial()
 
 # In days. Set to zero to disable.
 RETENTION_PERIOD = int(os.getenv('RETENTION_PERIOD', 180))
