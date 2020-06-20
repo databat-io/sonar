@@ -69,7 +69,7 @@ def populate_device(device):
 
     return payload
 
-@app.task
+@task
 def submit_to_databat(payload):
     print(payload)
 
