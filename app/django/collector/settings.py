@@ -45,7 +45,6 @@ BALENA_SUPERVISOR_ADDRESS = os.getenv('BALENA_SUPERVISOR_ADDRESS')
 BALENA_SUPERVISOR_API_KEY = os.getenv('BALENA_SUPERVISOR_API_KEY')
 DISABLE_ANALYTICS = string_to_bool(os.getenv('DISABLE_ANALYTICS', False))
 DISABLE_SCANNING = string_to_bool(os.getenv('DISABLE_SCANNING', False))
-DEVICE_ID = raspberry_pi_helper.get_serial()
 
 # In days. Set to zero to disable.
 RETENTION_PERIOD = int(os.getenv('RETENTION_PERIOD', 180))
@@ -163,15 +162,7 @@ def GET_DEVICE_ID():
     if os.getenv('BALENA_DEVICE_UUID', False):
         return os.getenv('BALENA_DEVICE_UUID')
 
-    device_id_file = os.path.join(DATABASE_PATH, 'device_id')
-    if not os.path.isfile(device_id_file):
-        device_id = ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(15))
-        with open(device_id_file, 'w') as f:
-            f.write(device_id)
-    else:
-        with open(device_id_file, 'r') as f:
-            device_id = f.read()
-    return device_id
+    return raspberry_pi_helper.get_serial()
 
 
 DEVICE_ID = GET_DEVICE_ID()
