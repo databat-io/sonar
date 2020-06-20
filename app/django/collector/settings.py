@@ -16,7 +16,7 @@ import random
 import string
 from celery.schedules import crontab
 from distutils.util import strtobool
-from lib import raspberry_pi_helper
+from collector.lib import raspberry_pi_helper
 
 
 def string_to_bool(string):
