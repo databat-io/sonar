@@ -11,6 +11,7 @@ import requests
 
 r = redis_helper.redis_connection(decode=True)
 
+
 def get_error_counter():
     """
     Return error counter.
@@ -35,7 +36,6 @@ def populate_device(device):
         'seen_counter': 1,
         'capture_device': settings.DEVICE_ID,
     }
-
 
     obj, created = Device.objects.get_or_create(
             device_address=device.addr,
@@ -71,18 +71,19 @@ def populate_device(device):
 
     return payload
 
+
 @task(retry_backoff=True)
 def submit_to_databat(self, payload):
-    )
-    return submit_payload
     try:
         r = requests.post(
             'https://api.databat.io/v1/sonar-payload',
-            params = {'api_token': settings.DATABAT_API_TOKEN},
+            params={'api_token': settings.DATABAT_API_TOKEN},
             data=json.dumps(payload)
+        )
         r.raise_for_status()
     except requests.exceptions.HTTPError as err:
         raise self.retry(err=err)
+
 
 @task
 def scan(timeout=30):
@@ -92,7 +93,7 @@ def scan(timeout=30):
         if settings.BALENA:
             perform_reboot = requests.post(
                 '{}/v1/reboot'.format(settings.BALENA_SUPERVISOR_ADDRESS),
-                params = {'apikey': settings.BALENA_SUPERVISOR_API_KEY}
+                params={'apikey': settings.BALENA_SUPERVISOR_API_KEY}
             )
             return perform_reboot
         else:
