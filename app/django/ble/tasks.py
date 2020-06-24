@@ -113,7 +113,7 @@ def scan(timeout=30):
                 devices_within_geofence = devices_within_geofence + 1
 
         if settings.DATABAT_API_TOKEN:
-            submit_to_databat.delay(result)
+            submit_to_databat(result).delay()
 
         return('Successfully scanned. Found {} devices within the geofence ({} in total).'.format(
             devices_within_geofence,
