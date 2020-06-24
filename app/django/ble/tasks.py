@@ -116,6 +116,6 @@ def scan(timeout=30):
             len(perform_scan))
         )
         if settings.DATABAT_API_TOKEN:
-            submit_to_databat.delay(payload)
+            submit_to_databat.delay(result)
     else:
         return('Unable to scan for devices.')
