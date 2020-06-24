@@ -50,7 +50,7 @@ def populate_device(device):
         payload['device_manufacturer'] = device.getValueText(ScanEntry.MANUFACTURER)
 
         obj.device_manufacturer_string_raw = device.getValueText(ScanEntry.MANUFACTURER)
-        payload['device_manufacturer_string_raw'] = device.getValueText(ScanEntry.MANUFACTURER)
+        payload['device_manufacturer_string'] = device.getValueText(ScanEntry.MANUFACTURER)
 
     if not created:
         obj.seen_counter = obj.seen_counter + 1
@@ -71,14 +71,18 @@ def populate_device(device):
 
     return payload
 
-@task
-def submit_to_databat(payload):
-    submit_payload = requests.post(
-        'https://us-central1-databat.cloudfunctions.net/post-record',
-        params = {'api_token': settings.DATABAT_API_TOKEN},
-        data=json.dumps(payload)
+@task(retry_backoff=True)
+def submit_to_databat(self, payload):
     )
     return submit_payload
+    try:
+        r = requests.post(
+            'https://api.databat.io/v1/sonar-payload',
+            params = {'api_token': settings.DATABAT_API_TOKEN},
+            data=json.dumps(payload)
+        r.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        raise self.retry(err=err)
 
 @task
 def scan(timeout=30):
