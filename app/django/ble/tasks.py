@@ -80,6 +80,7 @@ def submit_to_databat(self, payload):
             params={'api_token': settings.DATABAT_API_TOKEN},
             data=json.dumps(payload)
         )
+        print('Sent data to databat.io ({})'.format(r.status_code))
         r.raise_for_status()
     except requests.exceptions.HTTPError as err:
         raise self.retry(err=err)
