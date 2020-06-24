@@ -5,6 +5,7 @@ from bluepy.btle import ScanEntry
 from celery import task
 from django.conf import settings
 from django.utils import timezone
+from django.core.serializers.json import DjangoJSONEncoder
 from collector.lib import redis_helper
 import json
 import requests
@@ -78,7 +79,7 @@ def submit_to_databat(self, payload):
         r = requests.post(
             'https://api.databat.io/v1/sonar-payload',
             params={'api_token': settings.DATABAT_API_TOKEN},
-            data=json.dumps(payload)
+            data=payload
         )
         print('Sent data to databat.io ({})'.format(r.status_code))
         r.raise_for_status()
@@ -113,7 +114,10 @@ def scan(timeout=30):
                 devices_within_geofence = devices_within_geofence + 1
 
         if settings.DATABAT_API_TOKEN:
-            submit_to_databat(result).delay()
+            submit_to_databat(json.dumps(
+                result,
+                cls=DjangoJSONEncoder)
+                ).delay()
 
         return('Successfully scanned. Found {} devices within the geofence ({} in total).'.format(
             devices_within_geofence,
