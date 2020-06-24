@@ -75,15 +75,13 @@ def populate_device(device):
 
 @task(bind=True, retry_backoff=True)
 def submit_to_databat(self, payload):
-    json_payload = json.loads(payload)
-    print(json_payload)
     try:
         r = requests.post(
             'https://api.databat.io/v1/sonar-payload',
             params={'api_token': settings.DATABAT_API_TOKEN},
             json=json.loads(payload)
         )
-        print('Sent data to databat.io ({})'.format(r.status_code))
+        print('Sent data to api.databat.io. Got {}.'.format(r.status_code))
         r.raise_for_status()
     except requests.exceptions.HTTPError as err:
         raise self.retry(err=err)
