@@ -72,7 +72,7 @@ def populate_device(device):
     return payload
 
 
-@task(retry_backoff=True)
+@task(bind=True, retry_backoff=True)
 def submit_to_databat(self, payload):
     try:
         r = requests.post(
