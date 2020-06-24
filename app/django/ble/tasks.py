@@ -112,11 +112,12 @@ def scan(timeout=30):
             if device.rssi < settings.SENSITIVITY:
                 devices_within_geofence = devices_within_geofence + 1
 
+        if settings.DATABAT_API_TOKEN:
+            submit_to_databat.delay(result)
+
         return('Successfully scanned. Found {} devices within the geofence ({} in total).'.format(
             devices_within_geofence,
             len(perform_scan))
         )
-        if settings.DATABAT_API_TOKEN:
-            submit_to_databat.delay(result)
     else:
         return('Unable to scan for devices.')
