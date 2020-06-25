@@ -117,7 +117,7 @@ def scan(timeout=30):
             submit_to_databat(json.dumps(
                 result,
                 cls=DjangoJSONEncoder)
-                ).delay()
+                )
 
         return('Successfully scanned. Found {} devices within the geofence ({} in total).'.format(
             devices_within_geofence,

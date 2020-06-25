@@ -141,8 +141,7 @@ if string_to_bool(os.getenv('USE_POSTGRES', False)):
         }
     }
 else:
-
-    DATABASES = { 'default': {
+    DATABASES = {'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': os.path.join(DATABASE_PATH, 'db.sqlite3'),
             'OPTIONS': {
@@ -150,8 +149,6 @@ else:
             }
         }
     }
-
-
 
 
 def GET_DEVICE_ID():
