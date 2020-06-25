@@ -16,6 +16,7 @@ import random
 import string
 from celery.schedules import crontab
 from distutils.util import strtobool
+from collector.lib import raspberry_pi_helper
 
 
 def string_to_bool(string):
@@ -37,6 +38,9 @@ SECRET_KEY = os.getenv(
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = string_to_bool(os.getenv('DEBUG', False))
+
+
+DATABAT_API_TOKEN = os.getenv('DATABAT_API_TOKEN', False)
 
 DEV_MODE = string_to_bool(os.getenv('DEV_MODE', False))
 BALENA = os.getenv('BALENA_DEVICE_UUID', False)
@@ -137,8 +141,7 @@ if string_to_bool(os.getenv('USE_POSTGRES', False)):
         }
     }
 else:
-
-    DATABASES = { 'default': {
+    DATABASES = {'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': os.path.join(DATABASE_PATH, 'db.sqlite3'),
             'OPTIONS': {
@@ -146,8 +149,6 @@ else:
             }
         }
     }
-
-
 
 
 def GET_DEVICE_ID():
@@ -161,15 +162,7 @@ def GET_DEVICE_ID():
     if os.getenv('BALENA_DEVICE_UUID', False):
         return os.getenv('BALENA_DEVICE_UUID')
 
-    device_id_file = os.path.join(DATABASE_PATH, 'device_id')
-    if not os.path.isfile(device_id_file):
-        device_id = ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(15))
-        with open(device_id_file, 'w') as f:
-            f.write(device_id)
-    else:
-        with open(device_id_file, 'r') as f:
-            device_id = f.read()
-    return device_id
+    return raspberry_pi_helper.get_serial()
 
 
 DEVICE_ID = GET_DEVICE_ID()

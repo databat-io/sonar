@@ -11,6 +11,8 @@ services:
       - 'resin-data:/data'
     environment:
       CELERY: 1
+    env_file:
+      - celery.env
     privileged: true
     network_mode: host
     labels:
@@ -30,6 +32,8 @@ services:
     environment:
       GUNICORN: 1
       ALLOWED_HOSTS: "${ALLOWED_HOSTS}"
+    env_file:
+      - gunicorn.env
   redis:
     build: ./redis
     restart: on-failure

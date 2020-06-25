@@ -5,10 +5,13 @@ from bluepy.btle import ScanEntry
 from celery import task
 from django.conf import settings
 from django.utils import timezone
+from django.core.serializers.json import DjangoJSONEncoder
 from collector.lib import redis_helper
+import json
 import requests
 
 r = redis_helper.redis_connection(decode=True)
+
 
 def get_error_counter():
     """
@@ -22,6 +25,18 @@ def get_error_counter():
 
 
 def populate_device(device):
+    """
+    Populates the dataset. If Databat is enabled,
+    also submit the payload to Databat's backend.
+    """
+
+    payload = {
+        'timestamp': timezone.now(),
+        'device_type': device.addrType,
+        'rssi': device.rssi,
+        'seen_counter': 1,
+        'capture_device': settings.DEVICE_ID,
+    }
 
     obj, created = Device.objects.get_or_create(
             device_address=device.addr,
@@ -29,22 +44,47 @@ def populate_device(device):
     )
 
     if device.getValue(ScanEntry.MANUFACTURER):
-        obj.device_manufacturer = ble_helper.lookup_bluetooth_manufacturer(
+        manufacturer = ble_helper.lookup_bluetooth_manufacturer(
             device.getValueText(ScanEntry.MANUFACTURER)
         )
+        obj.device_manufacturer = manufacturer
+        payload['device_manufacturer'] = device.getValueText(ScanEntry.MANUFACTURER)
+
         obj.device_manufacturer_string_raw = device.getValueText(ScanEntry.MANUFACTURER)
+        payload['device_manufacturer_string'] = device.getValueText(ScanEntry.MANUFACTURER)
 
     if not created:
         obj.seen_counter = obj.seen_counter + 1
+        payload['seen_counter'] = obj.seen_counter
 
     if int(device.rssi) < settings.SENSITIVITY:
         obj.seen_within_geofence = True
 
     obj.ignore = obj.seen_counter > settings.DEVICE_IGNORE_THRESHOLD
-    obj.device_fingerprint = ble_helper.build_device_fingerprint(device)
+
+    device_fingerprint = ble_helper.build_device_fingerprint(device)
+    obj.device_fingerprint = device_fingerprint
+    payload['device_fingerprint'] = device_fingerprint
+
     obj.seen_last = timezone.now()
     obj.scanrecord_set.create(rssi=device.rssi)
     obj.save()
+
+    return payload
+
+
+@task(bind=True, retry_backoff=True)
+def submit_to_databat(self, payload):
+    try:
+        r = requests.post(
+            'https://api.databat.io/v1/sonar-payload',
+            params={'api_token': settings.DATABAT_API_TOKEN},
+            json=json.loads(payload)
+        )
+        print('Sent data to api.databat.io. Got {}.'.format(r.status_code))
+        r.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        raise self.retry(err=err)
 
 
 @task
@@ -55,19 +95,28 @@ def scan(timeout=30):
         if settings.BALENA:
             perform_reboot = requests.post(
                 '{}/v1/reboot'.format(settings.BALENA_SUPERVISOR_ADDRESS),
-                params = {'apikey': settings.BALENA_SUPERVISOR_API_KEY}
+                params={'apikey': settings.BALENA_SUPERVISOR_API_KEY}
             )
             return perform_reboot
         else:
             print('Reboot for non-Balena is not implemented yet.')
 
     perform_scan = ble_helper.scan_for_btle_devices(timeout=timeout)
+    result = []
     devices_within_geofence = 0
     if perform_scan:
         for device in ble_helper.scan_for_btle_devices(timeout=timeout):
-            populate_device(device)
+            result.append(
+                populate_device(device)
+            )
+
             if device.rssi < settings.SENSITIVITY:
                 devices_within_geofence = devices_within_geofence + 1
+
+        if settings.DATABAT_API_TOKEN:
+            payload = json.dumps(result, cls=DjangoJSONEncoder)
+            submit_to_databat(payload)
+
         return('Successfully scanned. Found {} devices within the geofence ({} in total).'.format(
             devices_within_geofence,
             len(perform_scan))
