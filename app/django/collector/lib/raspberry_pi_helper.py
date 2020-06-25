@@ -1,9 +1,10 @@
 import re
 import os
 
+
 def get_serial():
     """
-    Return serial of the Raspberry Pi,
+    Return serial number of the Raspberry Pi,
     or False if not a Raspberry Pi
     """
     if not os.path.isfile('/proc/cpuinfo'):
