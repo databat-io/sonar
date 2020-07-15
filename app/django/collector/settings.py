@@ -19,14 +19,6 @@ from collector.lib import raspberry_pi_helper
 from sentry_sdk.integrations.django import DjangoIntegration
 
 
-sentry_sdk.init(
-    dsn="https://e2452ee4769e4c3494fd36c30db310b8@o415735.ingest.sentry.io/5339123",
-    integrations=[DjangoIntegration()],
-
-    # If you wish to associate users to errors (assuming you are using
-    # django.contrib.auth) you may enable sending PII data.
-    send_default_pii=True
-)
 
 
 def string_to_bool(string):
@@ -51,7 +43,10 @@ DEBUG = string_to_bool(os.getenv('DEBUG', False))
 
 
 DATABAT_API_TOKEN = os.getenv('DATABAT_API_TOKEN', False)
-
+SENTRY_DSN = os.getenv(
+        'SENTRY_DSN',
+        'https://e2452ee4769e4c3494fd36c30db310b8@o415735.ingest.sentry.io/5339123'
+)
 DEV_MODE = string_to_bool(os.getenv('DEV_MODE', False))
 BALENA = os.getenv('BALENA_DEVICE_UUID', False)
 BALENA_SUPERVISOR_ADDRESS = os.getenv('BALENA_SUPERVISOR_ADDRESS')
@@ -83,6 +78,12 @@ if DEV_MODE:
 
 if BALENA:
     ALLOWED_HOSTS += ['.resindevice.io', '.balena-devices.com']
+
+sentry_sdk.init(
+    dsn=SENTRY_DSN,
+    integrations=[DjangoIntegration()],
+    send_default_pii=False
+)
 
 # Application definition
 
