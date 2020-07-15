@@ -32,9 +32,6 @@ def purge_old_scan_records():
         print('Retention is disabled.')
 
 
-# @TODO: All these reports need to be updated to
-# use the device_fingerprint once stabilized.
-
 @task
 def ble_generate_hourly_report(date=None):
     """
@@ -64,7 +61,13 @@ def ble_generate_hourly_report(date=None):
         timestamp__hour=datetime_obj_local.hour,
         rssi__lte=settings.SENSITIVITY
     ):
-        devices.add(d.device.device_address)
+        # Only add the device if
+        # a) we don't exclude device, or
+        # b) if we exclude devices and the device is not in the ignore state.
+        if not settings.EXCLUDE_IGNORED_DEVICES:
+            devices.add(d.device.device_fingerprint)
+        elif not d.device.ignore:
+            devices.add(d.device.device_fingerprint)
 
     return BleReport.objects.create(
         report_type='H',
@@ -102,7 +105,13 @@ def ble_generate_daily_report(date=None):
         timestamp__date=datetime_obj_local.date(),
         rssi__lte=settings.SENSITIVITY
     ):
-        devices.add(d.device.device_address)
+        # Only add the device if
+        # a) we don't exclude device, or
+        # b) if we exclude devices and the device is not in the ignore state.
+        if not settings.EXCLUDE_IGNORED_DEVICES:
+            devices.add(d.device.device_fingerprint)
+        elif not d.device.ignore:
+            devices.add(d.device.device_fingerprint)
 
     return BleReport.objects.create(
         report_type='D',
@@ -145,7 +154,13 @@ def ble_generate_monthly_report(date=None):
         timestamp__month=datetime_obj_local.month,
         rssi__lte=settings.SENSITIVITY
     ):
-        devices.add(d.device.device_address)
+        # Only add the device if
+        # a) we don't exclude device, or
+        # b) if we exclude devices and the device is not in the ignore state.
+        if not settings.EXCLUDE_IGNORED_DEVICES:
+            devices.add(d.device.device_fingerprint)
+        elif not d.device.ignore:
+            devices.add(d.device.device_fingerprint)
 
     return BleReport.objects.create(
         report_type='M',
