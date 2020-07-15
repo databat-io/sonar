@@ -12,11 +12,21 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-import random
-import string
+import sentry_sdk
 from celery.schedules import crontab
 from distutils.util import strtobool
 from collector.lib import raspberry_pi_helper
+from sentry_sdk.integrations.django import DjangoIntegration
+
+
+sentry_sdk.init(
+    dsn="https://e2452ee4769e4c3494fd36c30db310b8@o415735.ingest.sentry.io/5339123",
+    integrations=[DjangoIntegration()],
+
+    # If you wish to associate users to errors (assuming you are using
+    # django.contrib.auth) you may enable sending PII data.
+    send_default_pii=True
+)
 
 
 def string_to_bool(string):
