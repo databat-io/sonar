@@ -19,8 +19,6 @@ from collector.lib import raspberry_pi_helper
 from sentry_sdk.integrations.django import DjangoIntegration
 
 
-
-
 def string_to_bool(string):
     return bool(strtobool(str(string)))
 
@@ -63,6 +61,7 @@ SENSITIVITY = int(os.getenv('SENSITIVITY', -100))
 
 # The amount a device can be seen before being ignored
 DEVICE_IGNORE_THRESHOLD = int(os.getenv('DEVICE_IGNORE_THRESHOLD', 5000))
+EXCLUDE_IGNORED_DEVICES = string_to_bool(os.getenv('EXCLUDE_IGNORED_DEVICES', False)
 
 # The threshold used for the signage page
 CAPACITY_THRESHOLD = int(os.getenv('CAPACITY_THRESHOLD', 10))
