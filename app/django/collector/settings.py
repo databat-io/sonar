@@ -96,6 +96,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.messages',
     'django.contrib.sessions',
+    'django_extensions',
     'django.contrib.staticfiles',
 ]
 
