@@ -40,6 +40,21 @@ All you need to do is to display the URL `/analytics/signage/`, which will be dy
 
 ![Digital Signage integration](/img/signage-integration.png?raw=true)
 
+## Jypiter Integration
+
+```
+$ docker exec -ti sonar_gunicorn_1 python3 manage.py shell_plus --notebook --vi
+[I 14:38:13.086 NotebookApp] Serving notebooks from local directory: /usr/src/app
+[I 14:38:13.086 NotebookApp] Jupyter Notebook 6.1.3 is running at:
+[I 14:38:13.087 NotebookApp] http://305adce50308:8888/?token=x
+[I 14:38:13.087 NotebookApp]  or http://127.0.0.1:8888/?token=x
+[...]
+```
+Note that the address above is incorrect. Simply replace `127.0.0.1` with the IP of your Raspberry Pi (but keep the token), and you should be able to access Jypiter.
+
+TODO: Add a default Notebook with some basic reports.
+
+
 ## Supported hardware
 
  * Raspberry Pi 3/3+ Model B
