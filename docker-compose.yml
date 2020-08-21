@@ -25,6 +25,7 @@ services:
     restart: on-failure
     ports:
       - "80:80"
+      - "8888:8888"
     depends_on:
       - redis
     volumes:
