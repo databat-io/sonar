@@ -1,8 +1,4 @@
-"""
-Placeholder Unit Tests
-"""
+"""Placeholder Unit Tests"""
 def test_placeholder():
-    """
-    Passing test
-    """
+    """Passing test"""
     pass
