@@ -5,6 +5,7 @@ on: [push, pull_request]
 defaults:
   run:
     working-directory: app
+
 jobs:
   build:
     runs-on: ubuntu-latest
