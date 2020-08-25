@@ -9,6 +9,7 @@ RUN install_packages \
     python3-pip \
     python3-smbus \
     libglib2.0-dev \
+    libatlas-base-dev \
     wget
 
 # Set our working directory

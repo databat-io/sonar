@@ -40,7 +40,9 @@ All you need to do is to display the URL `/analytics/signage/`, which will be dy
 
 ![Digital Signage integration](/img/signage-integration.png?raw=true)
 
-## Jypiter Integration
+## Jupyter Integration
+
+To start a Jypyter session, simply SSH into your Raspberry Pi and run the following command:
 
 ```
 $ docker exec -ti sonar_gunicorn_1 python3 manage.py shell_plus --notebook --vi
@@ -52,8 +54,9 @@ $ docker exec -ti sonar_gunicorn_1 python3 manage.py shell_plus --notebook --vi
 ```
 Note that the address above is incorrect. Simply replace `127.0.0.1` with the IP of your Raspberry Pi (but keep the token), and you should be able to access Jypiter.
 
-TODO: Add a default Notebook with some basic reports.
+![Jupyter](/img/jupyter.png?raw=true)
 
+You can find a sample in the root directory of the app.
 
 ## Supported hardware
 
