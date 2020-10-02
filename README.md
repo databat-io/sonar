@@ -17,7 +17,7 @@ Sonar is also smart enough to learn about it's surrounding. If an given device i
 
 ## Use case
 
-The primary use case is to monitor foot traffic in commercial environments where you care about foot traffic flow. You could even deploy multiple Sonar devices and decrease the sensitivity in order to provide more granular.
+The primary use case is to monitor foot traffic in commercial environments where you care about foot traffic flow. You could even deploy multiple Sonar devices and decrease the sensitivity in order to provide more granular usage.
 
 ## Roadmap
 
@@ -152,4 +152,3 @@ Once you have the files available locally, you can use the following command to 
 ```
 $ python manage.py loaddata datadump.json
 ```
-
