@@ -24,6 +24,14 @@ The primary use case is to monitor foot traffic in commercial environments where
 * Add support for listening on WiFi traffic ([#10](https://github.com/databat-io/sonar/issues/10))
 * Integrate with existing solutions, such as Unifi Controller ([#23](https://github.com/databat-io/sonar/issues/23))
 
+## Important Technical Limitations
+
+Sonar is only able to detect BLE devices that are broadcasting advertising data. This is normally limited to devices that are ready for connections, such as perepherals (headphones, sensors etc).
+
+It is important to point out that phones and tablets etc that initiate connections ('central device' in BLE lingo) are likely not being picked up using this method.
+
+Detecting 'central devices' will require additional hardware (with proper sniffing capabilities). Support for this is on the roadmap.
+
 ## Screenshots
 
 ![Dashboard](/img/sonar_dashboard.png?raw=true)
