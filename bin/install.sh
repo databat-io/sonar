@@ -47,6 +47,7 @@ run_sonar() {
         # Allow access to Sonar both using the hostname and IP
         my_hostname=$(hostname -f)
         my_ip=$(ip -4 route get 8.8.8.8 | awk {'print $7'} | tr -d '\n')
+        touch "$SONAR_PATH/{gunicorn.env,celery.env}"
         export ALLOWED_HOSTS="$my_hostname\|$my_ip"
         docker-compose up -d
         echo "You should be able to access your Sonar instance either using http://$my_hostname or http://$my_ip"
