@@ -19,7 +19,9 @@ WORKDIR /usr/src/app
 RUN wget https://raw.githubusercontent.com/NordicSemiconductor/bluetooth-numbers-database/master/v1/company_ids.json
 
 # Upgrade pip and setuptools
-RUN pip3 install --upgrade pip
+RUN curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py  && \
+    python3 /tmp/get-pip.py && \
+    rm /tmp/get-pip.py
 RUN pip3 install -U setuptools
 
 COPY ./requirements.txt /requirements.txt
