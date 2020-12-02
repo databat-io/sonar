@@ -66,17 +66,7 @@ EXCLUDE_IGNORED_DEVICES = string_to_bool(os.getenv('EXCLUDE_IGNORED_DEVICES', Fa
 # The threshold used for the signage page
 CAPACITY_THRESHOLD = int(os.getenv('CAPACITY_THRESHOLD', 10))
 
-ALLOWED_HOSTS = []
-
-if os.getenv('ALLOWED_HOSTS', False):
-    for host in os.getenv('ALLOWED_HOSTS').split('|'):
-        ALLOWED_HOSTS.append(host)
-
-if DEV_MODE:
-    ALLOWED_HOSTS += ['*']
-
-if BALENA:
-    ALLOWED_HOSTS += ['.resindevice.io', '.balena-devices.com']
+ALLOWED_HOSTS = ['*']
 
 sentry_sdk.init(
     dsn=SENTRY_DSN,
