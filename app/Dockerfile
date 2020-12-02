@@ -26,6 +26,7 @@ RUN curl -s -o company_ids.json \
 COPY ./requirements.txt /requirements.txt
 
 # pip install python deps from requirements.txt on the Balena's build server
+RUN pip3 install -U setuptools
 RUN pip3 install -r /requirements.txt --no-cache-dir
 
 # Copy in actual code base
