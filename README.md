@@ -87,7 +87,7 @@ You can also use the same script to update Sonar.
 
 ### Balena
 
-[![balena deploy button](https://www.balena.io/deploy.png)](https://dashboard.balena-cloud.com/deploy?repoUrl=https://github.com/databat-io/sonar&defaultDeviceType=raspberrypi3)
+[![balena deploy button](https://www.balena.io/deploy.svg)](https://dashboard.balena-cloud.com/deploy?repoUrl=https://github.com/databat-io/sonar&defaultDeviceType=raspberrypi3)
 
 Running Sonar on [Balena](https://www.balena.io/) is a breeze. After creating an application on Balena, simply run:
 
