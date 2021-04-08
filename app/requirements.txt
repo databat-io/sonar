@@ -1,4 +1,4 @@
-Django==2.2.18
+Django==2.2.20
 bluepy==1.3.0
 celery==4.4.2
 django-chartit==0.2.9
