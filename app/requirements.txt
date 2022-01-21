@@ -8,7 +8,7 @@ gunicorn==19.10.0
 ipython==7.31.1
 jupyter==1.0.0
 mixpanel==4.5.0
-numpy==1.19.4
+numpy==1.21.0
 pandas==1.1.4
 plotly==4.9.0
 psycopg2==2.8.5
