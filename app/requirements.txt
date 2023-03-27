@@ -13,7 +13,7 @@ pandas==1.1.4
 plotly==4.9.0
 psycopg2==2.8.5
 pytz==2020.1
-redis==3.5.2
+redis==4.5.3
 requests==2.23.0
 sentry-sdk==0.16.1
 whitenoise==3.3.1
