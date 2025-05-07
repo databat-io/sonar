@@ -1,43 +1,22 @@
-version: '2'
-volumes:
-  resin-data:
 services:
-  celery:
-    build: ./app
-    depends_on:
-      - redis
-    restart: on-failure
+  ble-scanner:
+    build: .
+    container_name: ble-scanner
+    restart: unless-stopped
+    network_mode: host  # Required for Bluetooth access
     volumes:
-      - 'resin-data:/data'
+      - ble_data:/data
+      - /var/run/dbus:/var/run/dbus  # Required for Bluetooth access
+      - /var/run/bluetooth:/var/run/bluetooth  # Required for Bluetooth access
+    devices:
+      - /dev/bus/usb:/dev/bus/usb    # Required for Bluetooth hardware access
     environment:
-      CELERY: 1
-    env_file:
-      - celery.env
-    privileged: true
-    network_mode: host
-    labels:
-      io.balena.features.dbus: "1"
-      io.balena.features.kernel-modules: "1"
-      io.balena.features.firmware: "1"
-      io.balena.features.supervisor-api: "1"
-  gunicorn:
-    build: ./app
-    restart: on-failure
-    ports:
-      - "80:80"
-      - "8888:8888"
-    depends_on:
-      - redis
-    volumes:
-      - 'resin-data:/data'
-    environment:
-      GUNICORN: 1
-    env_file:
-      - gunicorn.env
-  redis:
-    build: ./redis
-    restart: on-failure
-    ports:
-      - "127.0.0.1:6379:6379"
-    volumes:
-      - 'resin-data:/data'
+      - TZ=UTC
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    privileged: true  # Required for Bluetooth access
+
+volumes:
+  ble_data:
+    driver: local

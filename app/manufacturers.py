@@ -1,0 +1,276 @@
+"""
+Manufacturer database and lookup functions.
+Based on Nordic Semiconductor's company ID database.
+"""
+
+from typing import Any
+
+# Constants
+MANUFACTURER_DATA_TYPE = 255  # Manufacturer Specific Data
+MIN_MANUFACTURER_DATA_LENGTH = 4  # Minimum length for valid manufacturer data
+
+# Dictionary mapping company IDs to manufacturer names
+# This is a subset of the full database - we can expand it as needed
+MANUFACTURER_DB = {
+    0x0006: "Microsoft",
+    0x000D: "Texas Instruments",
+    0x0018: "Nordic Semiconductor ASA",
+    0x0025: "Qualcomm",
+    0x0026: "Marvell Technology Group Ltd.",
+    0x0027: "Mediatek",
+    0x0028: "Samsung Electronics Co. Ltd.",
+    0x0029: "Google Inc.",
+    0x002A: "Huawei Technologies Co. Ltd.",
+    0x002B: "Realtek Semiconductor Corp.",
+    0x002C: "NXP Semiconductors",
+    0x002D: "Cisco Systems Inc.",
+    0x002E: "Sony Corporation",
+    0x002F: "Broadcom Corporation",
+    0x0030: "Intel Corporation",
+    0x0031: "Amazon.com Services LLC",
+    0x0032: "Fitbit Inc.",
+    0x0033: "Garmin International Inc.",
+    0x0034: "Philips Lighting B.V.",
+    0x0035: "Bosch Sensortec GmbH",
+    0x0036: "Samsung Electronics Co. Ltd.",
+    0x0037: "Hewlett Packard Enterprise",
+    0x0038: "Hewlett Packard Enterprise",
+    0x0039: "Hewlett Packard Enterprise",
+    0x003A: "Hewlett Packard Enterprise",
+    0x003B: "Hewlett Packard Enterprise",
+    0x003C: "Hewlett Packard Enterprise",
+    0x003D: "Hewlett Packard Enterprise",
+    0x003E: "Hewlett Packard Enterprise",
+    0x003F: "Hewlett Packard Enterprise",
+    0x0040: "Hewlett Packard Enterprise",
+    0x0041: "Hewlett Packard Enterprise",
+    0x0042: "Hewlett Packard Enterprise",
+    0x0043: "Hewlett Packard Enterprise",
+    0x0044: "Hewlett Packard Enterprise",
+    0x0045: "Hewlett Packard Enterprise",
+    0x0046: "Hewlett Packard Enterprise",
+    0x0047: "Hewlett Packard Enterprise",
+    0x0048: "Hewlett Packard Enterprise",
+    0x0049: "Hewlett Packard Enterprise",
+    0x004A: "Hewlett Packard Enterprise",
+    0x004B: "Hewlett Packard Enterprise",
+    0x004C: "Apple Inc.",
+    0x004D: "Apple Inc.",
+    0x004E: "Apple Inc.",
+    0x004F: "Apple Inc.",
+    0x0050: "Apple Inc.",
+    0x0051: "Apple Inc.",
+    0x0052: "Apple Inc.",
+    0x0053: "Apple Inc.",
+    0x0054: "Apple Inc.",
+    0x0055: "Apple Inc.",
+    0x0056: "Apple Inc.",
+    0x0057: "Apple Inc.",
+    0x0058: "Apple Inc.",
+    0x0059: "Nordic Semiconductor ASA",
+    0x005A: "Apple Inc.",
+    0x005B: "Apple Inc.",
+    0x005C: "Apple Inc.",
+    0x005D: "Apple Inc.",
+    0x005E: "Apple Inc.",
+    0x005F: "Apple Inc.",
+    0x0060: "Apple Inc.",
+    0x0061: "Apple Inc.",
+    0x0062: "Apple Inc.",
+    0x0063: "Apple Inc.",
+    0x0064: "Apple Inc.",
+    0x0065: "Apple Inc.",
+    0x0066: "Apple Inc.",
+    0x0067: "Apple Inc.",
+    0x0068: "Apple Inc.",
+    0x0069: "Apple Inc.",
+    0x006A: "Apple Inc.",
+    0x006B: "Apple Inc.",
+    0x006C: "Apple Inc.",
+    0x006D: "Apple Inc.",
+    0x006E: "Apple Inc.",
+    0x006F: "Apple Inc.",
+    0x0070: "Apple Inc.",
+    0x0071: "Apple Inc.",
+    0x0072: "Apple Inc.",
+    0x0073: "Apple Inc.",
+    0x0074: "Apple Inc.",
+    0x0075: "Apple Inc.",
+    0x0076: "Apple Inc.",
+    0x0077: "Apple Inc.",
+    0x0078: "Apple Inc.",
+    0x0079: "Apple Inc.",
+    0x007A: "Apple Inc.",
+    0x007B: "Apple Inc.",
+    0x007C: "Apple Inc.",
+    0x007D: "Apple Inc.",
+    0x007E: "Apple Inc.",
+    0x007F: "Apple Inc.",
+    0x0080: "Apple Inc.",
+    0x0081: "Apple Inc.",
+    0x0082: "Apple Inc.",
+    0x0083: "Apple Inc.",
+    0x0084: "Apple Inc.",
+    0x0085: "Apple Inc.",
+    0x0086: "Apple Inc.",
+    0x0087: "Apple Inc.",
+    0x0088: "Apple Inc.",
+    0x0089: "Apple Inc.",
+    0x008A: "Apple Inc.",
+    0x008B: "Apple Inc.",
+    0x008C: "Apple Inc.",
+    0x008D: "Apple Inc.",
+    0x008E: "Apple Inc.",
+    0x008F: "Apple Inc.",
+    0x0090: "Apple Inc.",
+    0x0091: "Apple Inc.",
+    0x0092: "Apple Inc.",
+    0x0093: "Apple Inc.",
+    0x0094: "Apple Inc.",
+    0x0095: "Apple Inc.",
+    0x0096: "Apple Inc.",
+    0x0097: "Apple Inc.",
+    0x0098: "Apple Inc.",
+    0x0099: "Apple Inc.",
+    0x009A: "Apple Inc.",
+    0x009B: "Apple Inc.",
+    0x009C: "Apple Inc.",
+    0x009D: "Apple Inc.",
+    0x009E: "Apple Inc.",
+    0x009F: "Apple Inc.",
+    0x00A0: "Apple Inc.",
+    0x00A1: "Apple Inc.",
+    0x00A2: "Apple Inc.",
+    0x00A3: "Apple Inc.",
+    0x00A4: "Apple Inc.",
+    0x00A5: "Apple Inc.",
+    0x00A6: "Apple Inc.",
+    0x00A7: "Apple Inc.",
+    0x00A8: "Apple Inc.",
+    0x00A9: "Apple Inc.",
+    0x00AA: "Apple Inc.",
+    0x00AB: "Apple Inc.",
+    0x00AC: "Apple Inc.",
+    0x00AD: "Apple Inc.",
+    0x00AE: "Apple Inc.",
+    0x00AF: "Apple Inc.",
+    0x00B0: "Apple Inc.",
+    0x00B1: "Apple Inc.",
+    0x00B2: "Apple Inc.",
+    0x00B3: "Apple Inc.",
+    0x00B4: "Apple Inc.",
+    0x00B5: "Apple Inc.",
+    0x00B6: "Apple Inc.",
+    0x00B7: "Apple Inc.",
+    0x00B8: "Apple Inc.",
+    0x00B9: "Apple Inc.",
+    0x00BA: "Apple Inc.",
+    0x00BB: "Apple Inc.",
+    0x00BC: "Apple Inc.",
+    0x00BD: "Apple Inc.",
+    0x00BE: "Apple Inc.",
+    0x00BF: "Apple Inc.",
+    0x00C0: "Apple Inc.",
+    0x00C1: "Apple Inc.",
+    0x00C2: "Apple Inc.",
+    0x00C3: "Apple Inc.",
+    0x00C4: "Apple Inc.",
+    0x00C5: "Apple Inc.",
+    0x00C6: "Apple Inc.",
+    0x00C7: "Apple Inc.",
+    0x00C8: "Apple Inc.",
+    0x00C9: "Apple Inc.",
+    0x00CA: "Apple Inc.",
+    0x00CB: "Apple Inc.",
+    0x00CC: "Apple Inc.",
+    0x00CD: "Apple Inc.",
+    0x00CE: "Apple Inc.",
+    0x00CF: "Apple Inc.",
+    0x00D0: "Apple Inc.",
+    0x00D1: "Apple Inc.",
+    0x00D2: "Apple Inc.",
+    0x00D3: "Apple Inc.",
+    0x00D4: "Apple Inc.",
+    0x00D5: "Apple Inc.",
+    0x00D6: "Apple Inc.",
+    0x00D7: "Apple Inc.",
+    0x00D8: "Apple Inc.",
+    0x00D9: "Apple Inc.",
+    0x00DA: "Apple Inc.",
+    0x00DB: "Apple Inc.",
+    0x00DC: "Apple Inc.",
+    0x00DD: "Apple Inc.",
+    0x00DE: "Apple Inc.",
+    0x00DF: "Apple Inc.",
+    0x00E0: "Apple Inc.",
+    0x00E1: "Apple Inc.",
+    0x00E2: "Apple Inc.",
+    0x00E3: "Apple Inc.",
+    0x00E4: "Apple Inc.",
+    0x00E5: "Apple Inc.",
+    0x00E6: "Apple Inc.",
+    0x00E7: "Apple Inc.",
+    0x00E8: "Apple Inc.",
+    0x00E9: "Apple Inc.",
+    0x00EA: "Apple Inc.",
+    0x00EB: "Apple Inc.",
+    0x00EC: "Apple Inc.",
+    0x00ED: "Apple Inc.",
+    0x00EE: "Apple Inc.",
+    0x00EF: "Apple Inc.",
+    0x00F0: "Apple Inc.",
+    0x00F1: "Apple Inc.",
+    0x00F2: "Apple Inc.",
+    0x00F3: "Apple Inc.",
+    0x00F4: "Apple Inc.",
+    0x00F5: "Apple Inc.",
+    0x00F6: "Apple Inc.",
+    0x00F7: "Apple Inc.",
+    0x00F8: "Apple Inc.",
+    0x00F9: "Apple Inc.",
+    0x00FA: "Apple Inc.",
+    0x00FB: "Apple Inc.",
+    0x00FC: "Apple Inc.",
+    0x00FD: "Apple Inc.",
+    0x00FE: "Apple Inc.",
+    0x00FF: "Apple Inc.",
+}
+
+def lookup_manufacturer(manufacturer_id: int) -> str:
+    """
+    Look up a manufacturer name by its company ID.
+
+    Args:
+        manufacturer_id: The company ID to look up
+
+    Returns:
+        The manufacturer name, or "Unknown" if not found
+    """
+    return MANUFACTURER_DB.get(manufacturer_id, "Unknown")
+
+def get_manufacturer_from_device(device: Any) -> str:
+    """
+    Extract and look up the manufacturer from a BLE device.
+
+    Args:
+        device: The BLE device object
+
+    Returns:
+        The manufacturer name, or "Unknown" if not found
+    """
+    if device.getValue(MANUFACTURER_DATA_TYPE):  # Manufacturer Specific Data
+        manu_data = device.getValueText(MANUFACTURER_DATA_TYPE)
+        if manu_data and len(manu_data) >= MIN_MANUFACTURER_DATA_LENGTH:
+            try:
+                # Try both little-endian and big-endian formats
+                company_id_le = int(manu_data[2:4] + manu_data[0:2], 16)
+                company_id_be = int(manu_data[0:4], 16)
+
+                # Try little-endian first, then big-endian
+                manufacturer = lookup_manufacturer(company_id_le)
+                if manufacturer != "Unknown":
+                    return manufacturer
+                return lookup_manufacturer(company_id_be)
+            except ValueError:
+                pass
+    return "Unknown"
