@@ -1,10 +1,11 @@
-name: Run Tests
+---
+name: Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   test:
@@ -16,11 +17,13 @@ jobs:
     - name: Build test container
       run: docker build -t sonar-test -f Dockerfile.test .
 
-    - name: Run tests
-      run: |
-        docker run --rm sonar-test pytest tests/ --cov=app --cov-report=term-missing
+    - name: Run ruff linting
+      run: docker run --rm sonar-test ruff check .
 
-    - name: Check test coverage
+    - name: Run tests with coverage
+      run: docker run --rm sonar-test pytest tests/ --cov=app --cov-report=term-missing
+
+    - name: Check coverage
       run: |
         # Extract coverage percentage from the test output
         COVERAGE=$(docker run --rm sonar-test pytest tests/ --cov=app --cov-report=term-missing | grep "TOTAL" | awk '{print $4}' | sed 's/%//')

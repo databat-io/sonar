@@ -59,91 +59,94 @@ docker-compose down
 
 ## API Endpoints
 
-### `/scan`
-- **Method**: GET
-- **Parameters**:
-  - `timeout` (optional): Scan duration in seconds (default: 10)
-- **Returns**: Current scan results and historical statistics
-- **Example Response**:
+### GET /latest
+Returns the most recent scan results and historical statistics. The scanning is performed automatically in the background every minute.
+
+Response:
 ```json
 {
-  "current_scan": {
-    "total_devices": 15,
-    "unique_devices": 12,
-    "ios_devices": 8,
-    "other_devices": 4,
-    "manufacturer_stats": {
-      "Apple Inc.": 8,
-      "Nordic Semiconductor": 3,
-      "Unknown": 1
+    "current_scan": {
+        "total_devices": 10,
+        "unique_devices": 8,
+        "ios_devices": 5,
+        "other_devices": 3,
+        "manufacturer_stats": {
+            "Apple Inc.": 5,
+            "Nordic Semiconductor ASA": 3
+        },
+        "scan_duration_seconds": 10
     },
-    "scan_duration_seconds": 10
-  },
-  "last_hour": {
-    "average_total_devices": 14.5,
-    "average_unique_devices": 11.2,
-    "peak_total_devices": 18,
-    "peak_unique_devices": 15
-  },
-  "last_24h": {
-    "average_total_devices": 12.8,
-    "average_unique_devices": 10.5,
-    "peak_total_devices": 20,
-    "peak_unique_devices": 16
-  }
-}
-```
-
-### `/time-series`
-- **Method**: GET
-- **Parameters**:
-  - `interval_minutes` (optional): Time interval between data points (default: 60)
-- **Returns**: Time-series data for the last 24 hours, suitable for generating charts
-- **Example Response**:
-```json
-{
-  "interval_minutes": 60,
-  "time_series": [
-    {
-      "timestamp": "2024-02-20T10:00:00Z",
-      "total_devices": 15,
-      "unique_devices": 12,
-      "ios_devices": 8,
-      "other_devices": 4,
-      "manufacturer_stats": {
-        "Apple Inc.": 8,
-        "Nordic Semiconductor": 3,
-        "Unknown": 1
-      }
+    "last_hour": {
+        "average_total_devices": 9.5,
+        "average_unique_devices": 7.5,
+        "average_ios_devices": 4.5,
+        "average_other_devices": 3.0,
+        "peak_total_devices": 12,
+        "peak_unique_devices": 9,
+        "peak_ios_devices": 6,
+        "peak_other_devices": 3,
+        "manufacturer_stats": {
+            "Apple Inc.": 5.5,
+            "Nordic Semiconductor ASA": 3.0
+        }
+    },
+    "last_24h": {
+        // Similar structure to last_hour
     }
-  ],
-  "summary": {
-    "average_total_devices": 14.5,
-    "average_unique_devices": 11.2,
-    "peak_total_devices": 18,
-    "peak_unique_devices": 15
-  },
-  "manufacturer_summary": {
-    "Apple Inc.": 8,
-    "Nordic Semiconductor": 3,
-    "Unknown": 1
-  }
 }
 ```
 
-### `/health`
-- **Method**: GET
-- **Returns**: System health status and Bluetooth availability
-- **Example Response**:
+### GET /time-series
+Get time series data for the last 24 hours, suitable for generating bar charts.
+
+Query Parameters:
+- `interval_minutes`: Time interval between data points (default: 60, min: 1, max: 1440)
+
+Response:
 ```json
 {
-  "status": "healthy",
-  "message": "System requirements met",
-  "bluetooth": {
-    "version": "5.66",
-    "controller": "00:11:22:33:44:55",
-    "powered": true
-  }
+    "interval_minutes": 60,
+    "time_series": [
+        {
+            "timestamp": "2024-03-20T10:00:00",
+            "total_devices": 10,
+            "unique_devices": 8,
+            "ios_devices": 5,
+            "other_devices": 3,
+            "manufacturer_stats": {
+                "Apple Inc.": 5,
+                "Nordic Semiconductor ASA": 3
+            }
+        }
+        // ... more time slots
+    ],
+    "summary": {
+        "total_devices": {
+            "min": 5,
+            "max": 15,
+            "avg": 10.2
+        },
+        // ... similar stats for other metrics
+    },
+    "manufacturer_summary": {
+        "Apple Inc.": {
+            "min": 3,
+            "max": 8,
+            "avg": 5.5
+        }
+        // ... similar stats for other manufacturers
+    }
+}
+```
+
+### GET /health
+Simple health check endpoint that verifies system requirements.
+
+Response:
+```json
+{
+    "status": "healthy",
+    "message": "System requirements met"
 }
 ```
 

@@ -1,20 +1,29 @@
-import pytest
-from datetime import datetime, timedelta
 import json
-import os
+from datetime import datetime, timedelta
 from pathlib import Path
+from unittest.mock import patch
+
+import pytest
+
 from app.persistence import DataPersistence, ScanResult
-from unittest.mock import patch, mock_open
+
+# Test constants
+SAMPLE_TOTAL_DEVICES = 10
+SAMPLE_UNIQUE_DEVICES = 8
+SAMPLE_IOS_DEVICES = 5
+SAMPLE_OTHER_DEVICES = 3
+SAVE_INTERVAL_MINUTES = 60
+TEST_RESULTS_COUNT = 3
 
 @pytest.fixture
 def sample_scan_result():
     return ScanResult(
         timestamp=datetime.now(),
-        total_devices=10,
-        unique_devices=8,
-        ios_devices=5,
-        other_devices=3,
-        manufacturer_stats={"Apple": 5, "Nordic": 3}
+        total_devices=SAMPLE_TOTAL_DEVICES,
+        unique_devices=SAMPLE_UNIQUE_DEVICES,
+        ios_devices=SAMPLE_IOS_DEVICES,
+        other_devices=SAMPLE_OTHER_DEVICES,
+        manufacturer_stats={"Apple": SAMPLE_IOS_DEVICES, "Nordic": SAMPLE_OTHER_DEVICES}
     )
 
 @pytest.fixture
@@ -24,7 +33,7 @@ def temp_data_dir(tmp_path):
     return str(data_dir)
 
 def test_init_creates_directory(temp_data_dir):
-    persistence = DataPersistence(data_dir=temp_data_dir)
+    DataPersistence(data_dir=temp_data_dir)
     assert Path(temp_data_dir).exists()
     assert Path(temp_data_dir).is_dir()
 
@@ -37,14 +46,14 @@ def test_save_history(temp_data_dir, sample_scan_result):
     history_file = Path(temp_data_dir) / "scan_history.json"
     assert history_file.exists()
 
-    with open(history_file, 'r') as f:
+    with open(history_file) as f:
         saved_data = json.load(f)
 
     assert len(saved_data) == 1
-    assert saved_data[0]['total_devices'] == 10
-    assert saved_data[0]['unique_devices'] == 8
-    assert saved_data[0]['ios_devices'] == 5
-    assert saved_data[0]['manufacturer_stats'] == {"Apple": 5, "Nordic": 3}
+    assert saved_data[0]['total_devices'] == SAMPLE_TOTAL_DEVICES
+    assert saved_data[0]['unique_devices'] == SAMPLE_UNIQUE_DEVICES
+    assert saved_data[0]['ios_devices'] == SAMPLE_IOS_DEVICES
+    assert saved_data[0]['manufacturer_stats'] == {"Apple": SAMPLE_IOS_DEVICES, "Nordic": SAMPLE_OTHER_DEVICES}
 
 def test_load_history(temp_data_dir, sample_scan_result):
     persistence = DataPersistence(data_dir=temp_data_dir)
@@ -59,10 +68,10 @@ def test_load_history(temp_data_dir, sample_scan_result):
     assert len(loaded_history) == 1
     loaded_result = loaded_history[0]
     assert isinstance(loaded_result, ScanResult)
-    assert loaded_result.total_devices == 10
-    assert loaded_result.unique_devices == 8
-    assert loaded_result.ios_devices == 5
-    assert loaded_result.manufacturer_stats == {"Apple": 5, "Nordic": 3}
+    assert loaded_result.total_devices == SAMPLE_TOTAL_DEVICES
+    assert loaded_result.unique_devices == SAMPLE_UNIQUE_DEVICES
+    assert loaded_result.ios_devices == SAMPLE_IOS_DEVICES
+    assert loaded_result.manufacturer_stats == {"Apple": SAMPLE_IOS_DEVICES, "Nordic": SAMPLE_OTHER_DEVICES}
 
 def test_load_history_empty_file(temp_data_dir):
     persistence = DataPersistence(data_dir=temp_data_dir)
@@ -84,22 +93,22 @@ def test_should_save_timing():
     persistence = DataPersistence()
 
     # Should save initially
-    assert persistence.should_save(interval_minutes=60) is False
+    assert persistence.should_save(interval_minutes=SAVE_INTERVAL_MINUTES) is False
 
     # Simulate time passing
-    persistence.last_save_time = datetime.now() - timedelta(minutes=61)
-    assert persistence.should_save(interval_minutes=60) is True
+    persistence.last_save_time = datetime.now() - timedelta(minutes=SAVE_INTERVAL_MINUTES + 1)
+    assert persistence.should_save(interval_minutes=SAVE_INTERVAL_MINUTES) is True
 
-    persistence.last_save_time = datetime.now() - timedelta(minutes=30)
-    assert persistence.should_save(interval_minutes=60) is False
+    persistence.last_save_time = datetime.now() - timedelta(minutes=SAVE_INTERVAL_MINUTES // 2)
+    assert persistence.should_save(interval_minutes=SAVE_INTERVAL_MINUTES) is False
 
 def test_save_history_file_permission_error(temp_data_dir, sample_scan_result):
     persistence = DataPersistence(data_dir=temp_data_dir)
     history = [sample_scan_result]
 
     # Simulate permission error
-    with patch('builtins.open', side_effect=PermissionError):
-        with pytest.raises(Exception):
+    with patch('builtins.open', side_effect=PermissionError("Permission denied")):
+        with pytest.raises(PermissionError, match="Permission denied"):
             persistence.save_history(history)
 
 def test_multiple_scan_results(temp_data_dir):
@@ -115,14 +124,14 @@ def test_multiple_scan_results(temp_data_dir):
             other_devices=i+1,
             manufacturer_stats={"Apple": i+2, "Nordic": i+1}
         )
-        for i in range(3)
+        for i in range(TEST_RESULTS_COUNT)
     ]
 
     persistence.save_history(results)
     loaded_results = persistence.load_history()
 
-    assert len(loaded_results) == 3
-    for original, loaded in zip(results, loaded_results):
+    assert len(loaded_results) == TEST_RESULTS_COUNT
+    for original, loaded in zip(results, loaded_results, strict=False):
         assert loaded.total_devices == original.total_devices
         assert loaded.unique_devices == original.unique_devices
         assert loaded.ios_devices == original.ios_devices

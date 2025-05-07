@@ -14,11 +14,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy requirements first to leverage Docker cache
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Install test dependencies
-RUN pip install --no-cache-dir pytest pytest-cov pytest-asyncio httpx
+COPY requirements.txt requirements-test.txt ./
+RUN pip install --no-cache-dir -r requirements.txt -r requirements-test.txt
 
 # Copy application code
 COPY . .

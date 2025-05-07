@@ -3,10 +3,13 @@ Manufacturer database and lookup functions.
 Based on Nordic Semiconductor's company ID database.
 """
 
+# Constants
+MANUFACTURER_DATA_TYPE = 255  # Manufacturer Specific Data
+MIN_MANUFACTURER_DATA_LENGTH = 4  # Minimum length for valid manufacturer data
+
 # Dictionary mapping company IDs to manufacturer names
 # This is a subset of the full database - we can expand it as needed
 MANUFACTURER_DB = {
-    0x004C: "Apple Inc.",
     0x0006: "Microsoft",
     0x000D: "Texas Instruments",
     0x0018: "Nordic Semiconductor ASA",
@@ -248,15 +251,18 @@ def get_manufacturer_from_device(device) -> str:
     Extract and look up the manufacturer from a BLE device.
 
     Args:
-        device: The BLE device to analyze
+        device: The BLE device object
 
     Returns:
         The manufacturer name, or "Unknown" if not found
     """
-    if device.getValue(255):  # Manufacturer Specific Data
-        manu_data = device.getValueText(255)
-        if len(manu_data) >= 4:
-            # Extract the company ID (first 2 bytes)
-            company_id = int(manu_data[:4], 16)
-            return lookup_manufacturer(company_id)
+    if device.getValue(MANUFACTURER_DATA_TYPE):  # Manufacturer Specific Data
+        manu_data = device.getValueText(MANUFACTURER_DATA_TYPE)
+        if manu_data and len(manu_data) >= MIN_MANUFACTURER_DATA_LENGTH:
+            try:
+                # First two bytes are the company ID in little endian
+                company_id = int(manu_data[2:4] + manu_data[0:2], 16)
+                return lookup_manufacturer(company_id)
+            except ValueError:
+                pass
     return "Unknown"

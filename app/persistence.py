@@ -3,11 +3,9 @@ Data persistence module for saving and loading scan history.
 """
 import json
 import logging
-from pathlib import Path
-from typing import List, Dict
+from dataclasses import asdict, dataclass
 from datetime import datetime
-from dataclasses import dataclass, asdict
-import os
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +16,7 @@ class ScanResult:
     unique_devices: int
     ios_devices: int
     other_devices: int
-    manufacturer_stats: Dict[str, int]
+    manufacturer_stats: dict[str, int]
 
 class DataPersistence:
     def __init__(self, data_dir: str = "/data"):
@@ -33,7 +31,7 @@ class DataPersistence:
         self.history_file = self.data_dir / "scan_history.json"
         self.last_save_time = datetime.now()
 
-    def save_history(self, history: List[ScanResult]) -> None:
+    def save_history(self, history: list[ScanResult]) -> None:
         """
         Save scan history to disk.
 
@@ -56,10 +54,10 @@ class DataPersistence:
             logger.info(f"Successfully saved {len(history)} scan results to {self.history_file}")
 
         except Exception as e:
-            logger.error(f"Failed to save scan history: {str(e)}")
+            logger.error(f"Failed to save scan history: {e!s}")
             raise
 
-    def load_history(self) -> List[ScanResult]:
+    def load_history(self) -> list[ScanResult]:
         """
         Load scan history from disk.
 
@@ -71,7 +69,7 @@ class DataPersistence:
                 logger.info("No existing history file found")
                 return []
 
-            with open(self.history_file, 'r') as f:
+            with open(self.history_file) as f:
                 history_data = json.load(f)
 
             # Convert ISO format strings back to datetime objects
@@ -84,7 +82,7 @@ class DataPersistence:
             return history
 
         except Exception as e:
-            logger.error(f"Failed to load scan history: {str(e)}")
+            logger.error(f"Failed to load scan history: {e!s}")
             return []
 
     def should_save(self, interval_minutes: int = 60) -> bool:
