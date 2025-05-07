@@ -4,31 +4,44 @@ Data persistence module for saving and loading scan history.
 import json
 import logging
 from dataclasses import asdict, dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 @dataclass
 class ScanResult:
+    """Represents the results of a BLE scan."""
     timestamp: datetime
     unique_devices: int
     ios_devices: int
     other_devices: int
     manufacturer_stats: dict[str, int]
+    session_stats: dict[str, float] | None = None
+
+    def __post_init__(self):
+        if self.session_stats is None:
+            self.session_stats = {
+                "total_sessions": 0,
+                "active_sessions": 0,
+                "average_dwell_time": 0
+            }
 
 class DataPersistence:
-    def __init__(self, data_dir: str = "/data") -> None:
+    """Handles saving and loading scan history."""
+    def __init__(self, data_dir: str = "/data", save_interval_minutes: int = 60) -> None:
         """
         Initialize data persistence with a storage directory.
 
         Args:
             data_dir: Directory where data will be stored
+            save_interval_minutes: Minimum minutes between saves
         """
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.history_file = self.data_dir / "scan_history.json"
-        self.last_save_time = datetime.now()
+        self.save_interval = timedelta(minutes=save_interval_minutes)
+        self.last_save = datetime.now()
 
     def save_history(self, history: list[ScanResult]) -> None:
         """
@@ -49,7 +62,7 @@ class DataPersistence:
             with open(self.history_file, 'w') as f:
                 json.dump(serializable_history, f)
 
-            self.last_save_time = datetime.now()
+            self.last_save = datetime.now()
             logger.info(f"Successfully saved {len(history)} scan results to {self.history_file}")
 
         except Exception as e:
@@ -84,15 +97,6 @@ class DataPersistence:
             logger.error(f"Failed to load scan history: {e!s}")
             return []
 
-    def should_save(self, interval_minutes: int = 60) -> bool:
-        """
-        Check if it's time to save based on the last save time.
-
-        Args:
-            interval_minutes: Minimum minutes between saves
-
-        Returns:
-            bool: True if it's time to save
-        """
-        time_since_last_save = datetime.now() - self.last_save_time
-        return time_since_last_save.total_seconds() >= interval_minutes * 60
+    def should_save(self) -> bool:
+        """Check if enough time has passed since last save."""
+        return datetime.now() - self.last_save >= self.save_interval

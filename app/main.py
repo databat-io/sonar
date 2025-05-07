@@ -25,6 +25,7 @@ from .core.constants import (
 )
 from .manufacturers import get_manufacturer_from_device
 from .persistence import DataPersistence, ScanResult
+from .session import SessionManager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -73,6 +74,9 @@ scan_history = deque(maxlen=MAX_HISTORY_MINUTES)
 # Load existing history on startup
 scan_history.extend(persistence.load_history())
 logger.info(f"Loaded {len(scan_history)} historical scan results")
+
+# Initialize session manager
+session_manager = SessionManager()
 
 def check_system_requirements() -> tuple[bool, str]:
     """
@@ -327,10 +331,17 @@ async def background_scan() -> None:
             unique_devices: set[str] = set()
             ios_devices: set[str] = set()
             manufacturer_stats = {}
+            current_time = datetime.now()
+
+            # Clean up old sessions
+            session_manager.cleanup_old_sessions(current_time)
 
             for device in devices:
                 fingerprint = build_device_fingerprint(device)
                 unique_devices.add(fingerprint)
+
+                # Update session
+                session_manager.update_session(fingerprint, current_time, device.rssi)
 
                 if is_ios_device(device):
                     ios_devices.add(fingerprint)
@@ -339,13 +350,17 @@ async def background_scan() -> None:
                 manufacturer = get_manufacturer_from_device(device)
                 manufacturer_stats[manufacturer] = manufacturer_stats.get(manufacturer, 0) + 1
 
+            # Get session statistics
+            session_stats = session_manager.get_session_stats()
+
             # Create and store scan result
             scan_result = ScanResult(
-                timestamp=datetime.now(),
+                timestamp=current_time,
                 unique_devices=len(unique_devices),
                 ios_devices=len(ios_devices),
                 other_devices=len(unique_devices) - len(ios_devices),
-                manufacturer_stats=manufacturer_stats
+                manufacturer_stats=manufacturer_stats,
+                session_stats=session_stats  # Add session statistics
             )
             scan_history.append(scan_result)
 
@@ -354,12 +369,14 @@ async def background_scan() -> None:
                 persistence.save_history(list(scan_history))
 
             logger.info(f"Background scan completed: {len(unique_devices)} unique devices found")
+            logger.info(f"Active sessions: {session_stats['active_sessions']}")
+            logger.info(f"Average dwell time: {session_stats['average_dwell_time']:.1f} seconds")
+
+            await asyncio.sleep(SCAN_INTERVAL_SECONDS)
 
         except Exception as e:
-            logger.error(f"Error in background scan: {e!s}")
-
-        # Wait for next scan interval
-        await asyncio.sleep(SCAN_INTERVAL_SECONDS)
+            logger.error(f"Error during background scan: {e}")
+            await asyncio.sleep(SCAN_INTERVAL_SECONDS)
 
 @app.on_event("startup")
 async def startup_event() -> None:
@@ -381,6 +398,7 @@ async def get_latest_scan() -> dict[str, Any]:
         - current_scan: Most recent scan results
         - last_hour: Statistics for the last hour
         - last_24h: Statistics for the last 24 hours
+        - session_stats: Current session statistics
     """
     try:
         # Calculate metrics for different time windows
@@ -395,7 +413,8 @@ async def get_latest_scan() -> dict[str, Any]:
                 "ios_devices": latest_scan.ios_devices,
                 "other_devices": latest_scan.other_devices,
                 "manufacturer_stats": latest_scan.manufacturer_stats,
-                "scan_duration_seconds": SCAN_DURATION_SECONDS
+                "scan_duration_seconds": SCAN_DURATION_SECONDS,
+                "session_stats": latest_scan.session_stats  # Add session statistics
             }
         else:
             current_scan = {
@@ -403,13 +422,22 @@ async def get_latest_scan() -> dict[str, Any]:
                 "ios_devices": 0,
                 "other_devices": 0,
                 "manufacturer_stats": {},
-                "scan_duration_seconds": 0
+                "scan_duration_seconds": 0,
+                "session_stats": {
+                    "total_sessions": 0,
+                    "active_sessions": 0,
+                    "average_dwell_time": 0
+                }
             }
+
+        # Get current session statistics
+        session_stats = session_manager.get_session_stats()
 
         result = {
             "current_scan": current_scan,
             "last_hour": last_hour,
-            "last_24h": last_24h
+            "last_24h": last_24h,
+            "session_stats": session_stats
         }
 
         return result
@@ -454,11 +482,30 @@ def _build_time_slot_stats(slot_time, results):
         ios_devices = [r.ios_devices for r in results]
         other_devices = [r.other_devices for r in results]
         manufacturer_stats = {}
+        session_stats = {
+            "total_sessions": 0,
+            "active_sessions": 0,
+            "average_dwell_time": 0
+        }
+
+        # Calculate manufacturer statistics
         for r in results:
             for manu, count in r.manufacturer_stats.items():
                 manufacturer_stats[manu] = manufacturer_stats.get(manu, 0) + count
+            # Aggregate session statistics
+            if hasattr(r, 'session_stats'):
+                session_stats["total_sessions"] += r.session_stats.get("total_sessions", 0)
+                session_stats["active_sessions"] += r.session_stats.get("active_sessions", 0)
+                session_stats["average_dwell_time"] += r.session_stats.get("average_dwell_time", 0)
+
+        # Calculate averages
         for manu in manufacturer_stats:
             manufacturer_stats[manu] = manufacturer_stats[manu] / len(results)
+        if len(results) > 0:
+            session_stats["total_sessions"] = session_stats["total_sessions"] / len(results)
+            session_stats["active_sessions"] = session_stats["active_sessions"] / len(results)
+            session_stats["average_dwell_time"] = session_stats["average_dwell_time"] / len(results)
+
         return {
             "timestamp": slot_time.isoformat(),
             "average_unique_devices": sum(unique_devices) / len(unique_devices),
@@ -467,7 +514,8 @@ def _build_time_slot_stats(slot_time, results):
             "peak_unique_devices": max(unique_devices),
             "peak_ios_devices": max(ios_devices),
             "peak_other_devices": max(other_devices),
-            "manufacturer_stats": manufacturer_stats
+            "manufacturer_stats": manufacturer_stats,
+            "session_stats": session_stats
         }
     else:
         return {
@@ -478,7 +526,12 @@ def _build_time_slot_stats(slot_time, results):
             "peak_unique_devices": 0,
             "peak_ios_devices": 0,
             "peak_other_devices": 0,
-            "manufacturer_stats": {}
+            "manufacturer_stats": {},
+            "session_stats": {
+                "total_sessions": 0,
+                "active_sessions": 0,
+                "average_dwell_time": 0
+            }
         }
 
 def _calculate_manufacturer_summary(time_series):
