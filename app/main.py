@@ -245,19 +245,15 @@ def calculate_metrics(time_window: timedelta) -> dict[str, Any]:
 
     if not window_results:
         return {
-            "average_total_devices": 0,
             "average_unique_devices": 0,
             "average_ios_devices": 0,
             "average_other_devices": 0,
-            "peak_total_devices": 0,
             "peak_unique_devices": 0,
             "peak_ios_devices": 0,
             "peak_other_devices": 0,
             "manufacturer_stats": {}
         }
 
-    # Calculate averages
-    total_devices = [r.total_devices for r in window_results]
     unique_devices = [r.unique_devices for r in window_results]
     ios_devices = [r.ios_devices for r in window_results]
     other_devices = [r.other_devices for r in window_results]
@@ -273,11 +269,9 @@ def calculate_metrics(time_window: timedelta) -> dict[str, Any]:
         manufacturer_stats[manufacturer] = manufacturer_stats[manufacturer] / len(window_results)
 
     return {
-        "average_total_devices": sum(total_devices) / len(total_devices),
         "average_unique_devices": sum(unique_devices) / len(unique_devices),
         "average_ios_devices": sum(ios_devices) / len(ios_devices),
         "average_other_devices": sum(other_devices) / len(other_devices),
-        "peak_total_devices": max(total_devices),
         "peak_unique_devices": max(unique_devices),
         "peak_ios_devices": max(ios_devices),
         "peak_other_devices": max(other_devices),
@@ -345,7 +339,6 @@ async def background_scan() -> None:
             # Create and store scan result
             scan_result = ScanResult(
                 timestamp=datetime.now(),
-                total_devices=len(unique_devices),
                 unique_devices=len(unique_devices),
                 ios_devices=len(ios_devices),
                 other_devices=len(unique_devices) - len(ios_devices),
@@ -395,7 +388,6 @@ async def get_latest_scan() -> dict[str, Any]:
         if scan_history:
             latest_scan = scan_history[-1]
             current_scan = {
-                "total_devices": latest_scan.total_devices,
                 "unique_devices": latest_scan.unique_devices,
                 "ios_devices": latest_scan.ios_devices,
                 "other_devices": latest_scan.other_devices,
@@ -404,7 +396,6 @@ async def get_latest_scan() -> dict[str, Any]:
             }
         else:
             current_scan = {
-                "total_devices": 0,
                 "unique_devices": 0,
                 "ios_devices": 0,
                 "other_devices": 0,
@@ -440,6 +431,76 @@ async def health_check() -> dict[str, str]:
         "message": message
     }
 
+def _assign_results_to_slots(scan_history, start_time, interval_minutes, time_slots):
+    for result in scan_history:
+        if result.timestamp < start_time:
+            continue
+        slot_time = result.timestamp.replace(
+            minute=(result.timestamp.minute // interval_minutes) * interval_minutes,
+            second=0,
+            microsecond=0
+        )
+        if slot_time not in time_slots:
+            slot_time = min(time_slots.keys(), key=lambda t: abs((t - slot_time).total_seconds()))
+        time_slots[slot_time].append(result)
+
+
+def _build_time_slot_stats(slot_time, results):
+    if results:
+        unique_devices = [r.unique_devices for r in results]
+        ios_devices = [r.ios_devices for r in results]
+        other_devices = [r.other_devices for r in results]
+        manufacturer_stats = {}
+        for r in results:
+            for manu, count in r.manufacturer_stats.items():
+                manufacturer_stats[manu] = manufacturer_stats.get(manu, 0) + count
+        for manu in manufacturer_stats:
+            manufacturer_stats[manu] = manufacturer_stats[manu] / len(results)
+        return {
+            "timestamp": slot_time.isoformat(),
+            "average_unique_devices": sum(unique_devices) / len(unique_devices),
+            "average_ios_devices": sum(ios_devices) / len(ios_devices),
+            "average_other_devices": sum(other_devices) / len(other_devices),
+            "peak_unique_devices": max(unique_devices),
+            "peak_ios_devices": max(ios_devices),
+            "peak_other_devices": max(other_devices),
+            "manufacturer_stats": manufacturer_stats
+        }
+    else:
+        return {
+            "timestamp": slot_time.isoformat(),
+            "average_unique_devices": 0,
+            "average_ios_devices": 0,
+            "average_other_devices": 0,
+            "peak_unique_devices": 0,
+            "peak_ios_devices": 0,
+            "peak_other_devices": 0,
+            "manufacturer_stats": {}
+        }
+
+def _calculate_manufacturer_summary(time_series):
+    manufacturer_summary = {}
+    for slot in time_series:
+        for manufacturer, count in slot["manufacturer_stats"].items():
+            if manufacturer not in manufacturer_summary:
+                manufacturer_summary[manufacturer] = {
+                    "min": float('inf'),
+                    "max": 0,
+                    "avg": 0
+                }
+            manufacturer_summary[manufacturer]["min"] = min(
+                manufacturer_summary[manufacturer]["min"],
+                count
+            )
+            manufacturer_summary[manufacturer]["max"] = max(
+                manufacturer_summary[manufacturer]["max"],
+                count
+            )
+            manufacturer_summary[manufacturer]["avg"] += count
+    for manufacturer in manufacturer_summary:
+        manufacturer_summary[manufacturer]["avg"] /= len(time_series)
+    return manufacturer_summary
+
 @app.get("/time-series")
 async def get_time_series(interval_minutes: int = 60) -> dict[str, Any]:
     """
@@ -462,94 +523,36 @@ async def get_time_series(interval_minutes: int = 60) -> dict[str, Any]:
     time_slots = {}
     current_time = start_time
     while current_time <= now:
-        time_slots[current_time] = {
-            "timestamp": current_time.isoformat(),
-            "total_devices": 0,
-            "unique_devices": 0,
-            "ios_devices": 0,
-            "other_devices": 0,
-            "manufacturer_stats": {}
-        }
+        time_slots[current_time] = []
         current_time += timedelta(minutes=interval_minutes)
 
-    # Process scan history
-    for result in scan_history:
-        if result.timestamp < start_time:
-            continue
+    # Assign scan results to slots
+    _assign_results_to_slots(scan_history, start_time, interval_minutes, time_slots)
 
-        # Find the appropriate time slot
-        slot_time = result.timestamp.replace(
-            minute=(result.timestamp.minute // interval_minutes) * interval_minutes,
-            second=0,
-            microsecond=0
-        )
-
-        if slot_time in time_slots:
-            slot = time_slots[slot_time]
-            slot["total_devices"] = max(slot["total_devices"], result.total_devices)
-            slot["unique_devices"] = max(slot["unique_devices"], result.unique_devices)
-            slot["ios_devices"] = max(slot["ios_devices"], result.ios_devices)
-            slot["other_devices"] = max(slot["other_devices"], result.other_devices)
-
-            # Update manufacturer stats
-            for manufacturer, count in result.manufacturer_stats.items():
-                if manufacturer not in slot["manufacturer_stats"]:
-                    slot["manufacturer_stats"][manufacturer] = 0
-                slot["manufacturer_stats"][manufacturer] = max(
-                    slot["manufacturer_stats"][manufacturer],
-                    count
-                )
-
-    # Convert to list format for easier client-side processing
-    time_series = list(time_slots.values())
+    # Build new time series format
+    time_series = [_build_time_slot_stats(slot_time, results) for slot_time, results in time_slots.items()]
 
     # Calculate summary statistics
     summary = {
-        "total_devices": {
-            "min": min(slot["total_devices"] for slot in time_series),
-            "max": max(slot["total_devices"] for slot in time_series),
-            "avg": sum(slot["total_devices"] for slot in time_series) / len(time_series)
-        },
         "unique_devices": {
-            "min": min(slot["unique_devices"] for slot in time_series),
-            "max": max(slot["unique_devices"] for slot in time_series),
-            "avg": sum(slot["unique_devices"] for slot in time_series) / len(time_series)
+            "min": min(slot["average_unique_devices"] for slot in time_series),
+            "max": max(slot["average_unique_devices"] for slot in time_series),
+            "avg": sum(slot["average_unique_devices"] for slot in time_series) / len(time_series)
         },
         "ios_devices": {
-            "min": min(slot["ios_devices"] for slot in time_series),
-            "max": max(slot["ios_devices"] for slot in time_series),
-            "avg": sum(slot["ios_devices"] for slot in time_series) / len(time_series)
+            "min": min(slot["average_ios_devices"] for slot in time_series),
+            "max": max(slot["average_ios_devices"] for slot in time_series),
+            "avg": sum(slot["average_ios_devices"] for slot in time_series) / len(time_series)
         },
         "other_devices": {
-            "min": min(slot["other_devices"] for slot in time_series),
-            "max": max(slot["other_devices"] for slot in time_series),
-            "avg": sum(slot["other_devices"] for slot in time_series) / len(time_series)
+            "min": min(slot["average_other_devices"] for slot in time_series),
+            "max": max(slot["average_other_devices"] for slot in time_series),
+            "avg": sum(slot["average_other_devices"] for slot in time_series) / len(time_series)
         }
     }
 
     # Calculate manufacturer summary
-    manufacturer_summary = {}
-    for slot in time_series:
-        for manufacturer, count in slot["manufacturer_stats"].items():
-            if manufacturer not in manufacturer_summary:
-                manufacturer_summary[manufacturer] = {
-                    "min": float('inf'),
-                    "max": 0,
-                    "avg": 0
-                }
-            manufacturer_summary[manufacturer]["min"] = min(
-                manufacturer_summary[manufacturer]["min"],
-                count
-            )
-            manufacturer_summary[manufacturer]["max"] = max(
-                manufacturer_summary[manufacturer]["max"],
-                count
-            )
-            manufacturer_summary[manufacturer]["avg"] += count
-
-    # Calculate averages for manufacturers
-    for manufacturer in manufacturer_summary:
-        manufacturer_summary[manufacturer]["avg"] /= len(time_series)
+    manufacturer_summary = _calculate_manufacturer_summary(time_series)
 
     return {
         "interval_minutes": interval_minutes,
