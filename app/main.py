@@ -8,7 +8,7 @@ from typing import Any
 from pathlib import Path
 
 from bluepy.btle import DefaultDelegate, Scanner
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -638,3 +638,7 @@ async def get_time_series(interval_minutes: int = 60) -> dict[str, Any]:
 async def get_dashboard():
     """Serve the dashboard HTML file."""
     return FileResponse(frontend_path / "index.html")
+
+@app.options('/{rest_of_path:path}')
+async def preflight_handler(rest_of_path: str):
+    return Response()
