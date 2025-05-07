@@ -1,11 +1,11 @@
-from datetime import datetime, timedelta
-from unittest.mock import MagicMock, patch
 import asyncio
 import subprocess
+from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
 
 import pytest
-from fastapi.testclient import TestClient
 from fastapi import HTTPException
+from fastapi.testclient import TestClient
 
 from app.main import (
     COMPLETE_16B_SERVICES,
@@ -13,17 +13,17 @@ from app.main import (
     MANUFACTURER_DATA_TYPE,
     MAX_TIME_SERIES_MINUTES,
     SCAN_DURATION_SECONDS,
+    BackgroundScanner,
+    ScanDelegate,
     app,
+    background_scan,
     build_device_fingerprint,
     calculate_metrics,
     check_system_requirements,
+    get_time_series,
     is_ios_device,
     scan_history,
-    ScanDelegate,
-    BackgroundScanner,
     setup_bluetooth,
-    background_scan,
-    get_time_series,
 )
 from app.persistence import ScanResult
 
@@ -43,6 +43,8 @@ SHA256_LENGTH = 64
 TEST_APPLE_COMPANY_ID = "4c00"
 TEST_APPLE_SERVICE_UUID = "FD6F"  # Valid Apple Continuity UUID
 TEST_NON_APPLE_SERVICE_UUID = "fe0d"
+TEST_MANUFACTURER_DATA_TYPE = 255
+TEST_SETUP_BLUETOOTH_COMMANDS = 4
 
 client = TestClient(app)
 
@@ -339,8 +341,8 @@ def mock_device():
 def mock_apple_device():
     device = MagicMock()
     device.addrType = "random"
-    device.getValue = MagicMock(side_effect=lambda x: b'4c00' if x == 255 else None)
-    device.getValueText = MagicMock(side_effect=lambda x: TEST_APPLE_COMPANY_ID if x == 255 else '')
+    device.getValue = MagicMock(side_effect=lambda x: b'4c00' if x == TEST_MANUFACTURER_DATA_TYPE else None)
+    device.getValueText = MagicMock(side_effect=lambda x: TEST_APPLE_COMPANY_ID if x == TEST_MANUFACTURER_DATA_TYPE else '')
     return device
 
 @pytest.fixture
@@ -380,14 +382,6 @@ def test_check_system_requirements_bluetooth_disabled():
         assert not success
         assert "Bluetooth is not powered on" in message
 
-def test_check_system_requirements_success():
-    with patch('subprocess.run') as mock_run:
-        mock_run.return_value.stdout = "Powered: yes"
-        mock_run.return_value.returncode = 0
-        success, message = check_system_requirements()
-        assert success
-        assert "System requirements met" in message
-
 def test_is_ios_device_by_manufacturer(mock_apple_device):
     assert is_ios_device(mock_apple_device)
 
@@ -400,12 +394,12 @@ def test_is_ios_device_negative(mock_device):
 def test_build_device_fingerprint_complete(mock_complete_device):
     fingerprint = build_device_fingerprint(mock_complete_device)
     assert isinstance(fingerprint, str)
-    assert len(fingerprint) == 64  # SHA-256 hash length
+    assert len(fingerprint) == SHA256_LENGTH
 
 def test_build_device_fingerprint_minimal(mock_device):
     fingerprint = build_device_fingerprint(mock_device)
     assert isinstance(fingerprint, str)
-    assert len(fingerprint) == 64  # SHA-256 hash length
+    assert len(fingerprint) == SHA256_LENGTH
 
 def test_calculate_metrics_empty():
     # Clear scan history before testing
@@ -460,14 +454,14 @@ def test_setup_bluetooth_success():
     with patch('subprocess.run') as mock_run:
         mock_run.return_value.returncode = 0
         setup_bluetooth()  # Should not raise an exception
-        assert mock_run.call_count == 4  # Updated to expect 4 commands
+        assert mock_run.call_count == TEST_SETUP_BLUETOOTH_COMMANDS
 
 def test_setup_bluetooth_failure():
     with patch('subprocess.run') as mock_run:
         mock_run.side_effect = subprocess.CalledProcessError(1, 'hciconfig')
         with pytest.raises(HTTPException) as exc_info:
             setup_bluetooth()
-        assert exc_info.value.status_code == 500
+        assert exc_info.value.status_code == HTTP_ERROR
         assert "Failed to set up Bluetooth adapter" in str(exc_info.value.detail)
 
 @pytest.mark.asyncio
@@ -509,12 +503,12 @@ async def test_background_scan_success():
 async def test_get_time_series_invalid_interval():
     with pytest.raises(HTTPException) as exc_info:
         await get_time_series(interval_minutes=0)
-    assert exc_info.value.status_code == 400
+    assert exc_info.value.status_code == HTTP_BAD_REQUEST
     assert "must be between 1 and 1440" in str(exc_info.value.detail)
 
     with pytest.raises(HTTPException) as exc_info:
         await get_time_series(interval_minutes=1441)  # More than 24 hours
-    assert exc_info.value.status_code == 400
+    assert exc_info.value.status_code == HTTP_BAD_REQUEST
     assert "must be between 1 and 1440" in str(exc_info.value.detail)
 
 @pytest.mark.asyncio

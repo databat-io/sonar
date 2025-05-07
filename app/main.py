@@ -243,9 +243,16 @@ def setup_bluetooth():
         subprocess.run(['hciconfig', 'hci0', 'reset'], check=True)
         # Enable scanning
         subprocess.run(['hciconfig', 'hci0', 'up'], check=True)
-        # Enable LE scan mode using bluetoothctl
-        subprocess.run(['bluetoothctl', 'scan', 'off'], check=True)  # Stop any existing scans
-        subprocess.run(['bluetoothctl', 'power', 'on'], check=True)  # Ensure power is on
+
+        # Try to stop any existing scans, but don't fail if it errors
+        try:
+            subprocess.run(['bluetoothctl', 'scan', 'off'], check=False)
+        except subprocess.SubprocessError:
+            logger.debug("No active scan to stop")
+
+        # Ensure power is on
+        subprocess.run(['bluetoothctl', 'power', 'on'], check=True)
+
     except subprocess.CalledProcessError as e:
         logger.error(f"Error setting up Bluetooth: {e}")
         raise HTTPException(

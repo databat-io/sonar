@@ -4,6 +4,32 @@
 This is a FastAPI-based service for counting and analyzing Bluetooth Low Energy (BLE) devices in proximity.
 The service provides real-time scanning, device tracking, and historical data analysis.
 
+## Code Quality
+### Ruff Configuration
+- Uses ruff for linting and code formatting
+- Configuration in pyproject.toml
+- Rules enabled:
+  - E: pycodestyle errors
+  - F: pyflakes errors
+  - B: flake8-bugbear
+  - I: isort
+  - N: pep8-naming
+  - UP: pyupgrade
+  - PL: pylint
+  - RUF: ruff-specific rules
+- Line length: 160 characters
+- Target Python version: 3.11
+- Auto-fix enabled for all rules
+
+### Running Ruff
+```bash
+# Check code
+docker run --rm -v $(pwd):/app sonar-test ruff check .
+
+# Fix issues automatically
+docker run --rm -v $(pwd):/app sonar-test ruff check . --fix
+```
+
 ## Testing
 ### Local Development
 Run tests in the Docker test container:
