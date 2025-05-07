@@ -4,16 +4,18 @@ const ENDPOINTS = {
     devices: `${API_BASE}/devices`,
     count: `${API_BASE}/count`,
     manufacturers: `${API_BASE}/manufacturers`,
-    scan: `${API_BASE}/scan`
+    latest: `${API_BASE}/latest`
 };
 
 // Chart instance
 let manufacturerChart = null;
 
+// Scan interval (should match backend SCAN_INTERVAL_SECONDS)
+const SCAN_INTERVAL_SECONDS = 30; // Adjust if your backend uses a different value
+
 // Initialize the dashboard
 document.addEventListener('DOMContentLoaded', () => {
     initializeChart();
-    setupEventListeners();
     updateDashboard();
     // Update every 5 seconds
     setInterval(updateDashboard, 5000);
@@ -52,19 +54,14 @@ function initializeChart() {
     });
 }
 
-// Set up event listeners for scan control buttons
-function setupEventListeners() {
-    document.getElementById('startScan').addEventListener('click', startScan);
-    document.getElementById('stopScan').addEventListener('click', stopScan);
-}
-
 // Update all dashboard components
 async function updateDashboard() {
     try {
         await Promise.all([
             updateDeviceCount(),
             updateDeviceList(),
-            updateManufacturerData()
+            updateManufacturerData(),
+            updateScanStatus()
         ]);
     } catch (error) {
         console.error('Error updating dashboard:', error);
@@ -119,26 +116,34 @@ async function updateManufacturerData() {
     }
 }
 
-// Start scanning
-async function startScan() {
+// Update scan status by checking the timestamp of the latest scan
+async function updateScanStatus() {
     try {
-        const response = await fetch(ENDPOINTS.scan, { method: 'POST' });
+        const response = await fetch(ENDPOINTS.latest);
         const data = await response.json();
-        document.getElementById('scanStatus').textContent = 'Scanning';
-        document.getElementById('scanStatus').classList.add('text-green-600');
+        const scanStatusElem = document.getElementById('scanStatus');
+        let status = 'Unknown';
+        let colorClass = 'text-gray-900';
+        if (data.current_scan && data.current_scan.session_stats) {
+            // Check if the latest scan is recent
+            const now = new Date();
+            const lastScan = data.current_scan.timestamp || null;
+            let isScanning = false;
+            if (lastScan) {
+                const lastScanDate = new Date(lastScan);
+                const secondsAgo = (now - lastScanDate) / 1000;
+                if (secondsAgo < SCAN_INTERVAL_SECONDS * 2) {
+                    isScanning = true;
+                }
+            }
+            status = isScanning ? 'Scanning' : 'Idle';
+            colorClass = isScanning ? 'text-green-600' : 'text-yellow-600';
+        }
+        scanStatusElem.textContent = status;
+        scanStatusElem.className = `text-2xl font-semibold ${colorClass}`;
     } catch (error) {
-        console.error('Error starting scan:', error);
-    }
-}
-
-// Stop scanning
-async function stopScan() {
-    try {
-        const response = await fetch(ENDPOINTS.scan, { method: 'DELETE' });
-        const data = await response.json();
-        document.getElementById('scanStatus').textContent = 'Stopped';
-        document.getElementById('scanStatus').classList.remove('text-green-600');
-    } catch (error) {
-        console.error('Error stopping scan:', error);
+        document.getElementById('scanStatus').textContent = 'Unknown';
+        document.getElementById('scanStatus').className = 'text-2xl font-semibold text-gray-900';
+        console.error('Error updating scan status:', error);
     }
 }
