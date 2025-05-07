@@ -1,3 +1,5 @@
+[![Test](https://github.com/Viktopia/sonar/actions/workflows/test.yml/badge.svg)](https://github.com/Viktopia/sonar/actions/workflows/test.yml)
+
 # Sonar - BLE Device Counter
 
 A FastAPI-based service for counting and analyzing Bluetooth Low Energy (BLE) devices in proximity. This service provides detailed statistics about nearby BLE devices, including manufacturer identification and device type classification.

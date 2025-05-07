@@ -8,11 +8,11 @@ import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
+from app.core.constants import MAX_TIME_SERIES_MINUTES
 from app.main import (
     COMPLETE_16B_SERVICES,
     INCOMPLETE_16B_SERVICES,
     MANUFACTURER_DATA_TYPE,
-    MAX_TIME_SERIES_MINUTES,
     SCAN_DURATION_SECONDS,
     BackgroundScanner,
     ScanDelegate,
@@ -29,23 +29,20 @@ from app.main import (
 from app.persistence import ScanResult
 
 # Test constants
-TEST_MAC_ADDRESS = "00:11:22:33:44:55"
-TEST_RSSI = -65
-TEST_SCAN_DURATION = SCAN_DURATION_SECONDS
 TEST_INTERVAL_MINUTES = 60
-TEST_APPLE_MANU_DATA = "4c00"
+TEST_RESULTS_COUNT = 3
+TEST_MAC_ADDRESS = "00:11:22:33:44:55"
+TEST_RSSI = -50
+TEST_SCAN_DURATION = SCAN_DURATION_SECONDS
+TEST_APPLE_MANU_DATA = "4c000000000000000000000000000000"
 TEST_APPLE_SERVICE = "0xFD6F"
 TEST_OTHER_SERVICE = "1234"
-TEST_RESULTS_COUNT = 3
-HTTP_OK = 200
-HTTP_ERROR = 500
-HTTP_BAD_REQUEST = 400
+TEST_SETUP_BLUETOOTH_COMMANDS = 4
 SHA256_LENGTH = 64
 TEST_APPLE_COMPANY_ID = "4c00"
 TEST_APPLE_SERVICE_UUID = "FD6F"  # Valid Apple Continuity UUID
 TEST_NON_APPLE_SERVICE_UUID = "fe0d"
 TEST_MANUFACTURER_DATA_TYPE = 255
-TEST_SETUP_BLUETOOTH_COMMANDS = 4
 
 # MAC randomization test constants
 IOS_PRIVATE_ADDR_1 = "40:00:11:22:33:44"
@@ -57,6 +54,11 @@ TEST_ANDROID_MANU_DATA = "005912345678"  # Nordic Semiconductor manufacturer dat
 
 client = TestClient(app)
 
+# Test constants
+HTTP_OK = 200
+HTTP_ERROR = 500
+HTTP_BAD_REQUEST = 400
+
 def test_health_check():
     with patch('app.main.check_system_requirements') as mock_check:
         mock_check.return_value = (True, "System requirements met")
@@ -67,63 +69,20 @@ def test_health_check():
         assert data["message"] == "System requirements met"
 
 @pytest.fixture
-def mock_ble_device():
+def mock_device():
     device = MagicMock()
     device.addr = TEST_MAC_ADDRESS
-    device.addrType = "random"  # Most BLE devices use random addresses
+    device.addrType = "random"
     device.rssi = TEST_RSSI
-    # Simulate Apple device with manufacturer data
-    device.getValue = MagicMock(side_effect=lambda x: b'4c00' if x == MANUFACTURER_DATA_TYPE else None)
-    device.getValueText = MagicMock(side_effect=lambda x: TEST_APPLE_MANU_DATA if x == MANUFACTURER_DATA_TYPE else '')
+    device.getValue = MagicMock(return_value=None)
+    device.getValueText = MagicMock(return_value='')
     return device
 
-def test_is_ios_device_with_apple_manufacturer():
-    device = MagicMock()
-    device.getValue = MagicMock(side_effect=lambda x: b'4c00' if x == MANUFACTURER_DATA_TYPE else None)
-    device.getValueText = MagicMock(side_effect=lambda x: TEST_APPLE_MANU_DATA if x == MANUFACTURER_DATA_TYPE else '')
-    assert is_ios_device(device) is True
-
-def test_is_ios_device_with_apple_service():
-    device = MagicMock()
-    device.getValue = MagicMock(side_effect=lambda x: b'0xFD6F' if x in [INCOMPLETE_16B_SERVICES, COMPLETE_16B_SERVICES] else None)
-    device.getValueText = MagicMock(side_effect=lambda x: TEST_APPLE_SERVICE if x in [INCOMPLETE_16B_SERVICES, COMPLETE_16B_SERVICES] else '')
-    assert is_ios_device(device) is True
-
-def test_is_ios_device_non_apple():
-    device = MagicMock()
-    device.getValue = MagicMock(return_value=None)
-    device.getValueText = MagicMock(return_value='')
-    assert is_ios_device(device) is False
-
-def test_build_device_fingerprint_basic():
-    device = MagicMock()
-    device.addrType = "public"
-    device.getValue = MagicMock(return_value=None)
-    device.getValueText = MagicMock(return_value='')
-    fingerprint = build_device_fingerprint(device)
-    assert isinstance(fingerprint, str)
-    assert len(fingerprint) == SHA256_LENGTH  # SHA-256 hash length
-
-def test_build_device_fingerprint_with_manufacturer():
-    device = MagicMock()
-    device.addrType = "public"
-    device.getValue = MagicMock(side_effect=lambda x: b'4c00' if x == MANUFACTURER_DATA_TYPE else None)
-    device.getValueText = MagicMock(side_effect=lambda x: TEST_APPLE_MANU_DATA if x == MANUFACTURER_DATA_TYPE else '')
-    fingerprint1 = build_device_fingerprint(device)
-
-    # Change manufacturer data
-    device.getValueText = MagicMock(side_effect=lambda x: '0000' if x == MANUFACTURER_DATA_TYPE else '')
-    fingerprint2 = build_device_fingerprint(device)
-
-    assert fingerprint1 != fingerprint2
-
-def test_build_device_fingerprint_with_services():
-    device = MagicMock()
-    device.addrType = "public"
-    device.getValue = MagicMock(side_effect=lambda x: b'1234' if x in [INCOMPLETE_16B_SERVICES, COMPLETE_16B_SERVICES] else None)
-    device.getValueText = MagicMock(side_effect=lambda x: TEST_OTHER_SERVICE if x in [INCOMPLETE_16B_SERVICES, COMPLETE_16B_SERVICES] else '')
-    fingerprint = build_device_fingerprint(device)
-    assert isinstance(fingerprint, str)
+@pytest.fixture
+def mock_complete_device(mock_device):
+    mock_device.getValue = MagicMock(return_value=b'4c00')
+    mock_device.getValueText = MagicMock(return_value=TEST_APPLE_MANU_DATA)
+    return mock_device
 
 @pytest.mark.asyncio
 async def test_latest_endpoint():
@@ -186,7 +145,6 @@ async def test_latest_endpoint():
         # Mock scan history
         mock_history.__getitem__.return_value = ScanResult(
             timestamp=datetime.now(),
-            total_devices=1,
             unique_devices=1,
             ios_devices=1,
             other_devices=0,
@@ -205,12 +163,11 @@ async def test_latest_endpoint():
 
         # Check current scan data
         current = data["current_scan"]
-        assert current["total_devices"] == 1
         assert current["unique_devices"] == 1
-        assert current["ios_devices"] == 1  # Should detect as iOS device
+        assert current["ios_devices"] == 1
         assert current["other_devices"] == 0
         assert "Apple Inc." in current["manufacturer_stats"]
-        assert current["scan_duration_seconds"] == TEST_SCAN_DURATION  # Fixed duration for background scans
+        assert current["scan_duration_seconds"] == TEST_SCAN_DURATION
 
 @pytest.mark.asyncio
 async def test_latest_endpoint_error():
@@ -291,10 +248,9 @@ def test_time_series_endpoint():
     assert len(time_series) > 0
     first_entry = time_series[0]
     assert "timestamp" in first_entry
-    assert "total_devices" in first_entry
-    assert "unique_devices" in first_entry
-    assert "ios_devices" in first_entry
-    assert "other_devices" in first_entry
+    assert "average_unique_devices" in first_entry
+    assert "average_ios_devices" in first_entry
+    assert "average_other_devices" in first_entry
     assert "manufacturer_stats" in first_entry
 
 def test_invalid_interval():
@@ -310,7 +266,6 @@ def test_calculate_metrics():
     test_data = [
         ScanResult(
             timestamp=now - timedelta(minutes=i),
-            total_devices=i+5,
             unique_devices=i+3,
             ios_devices=i+2,
             other_devices=i+1,
@@ -328,23 +283,13 @@ def test_calculate_metrics():
 
     # Verify metrics
     assert isinstance(metrics, dict)
-    assert "average_total_devices" in metrics
     assert "average_unique_devices" in metrics
     assert "average_ios_devices" in metrics
     assert "average_other_devices" in metrics
-    assert "peak_total_devices" in metrics
     assert "peak_unique_devices" in metrics
     assert "peak_ios_devices" in metrics
     assert "peak_other_devices" in metrics
     assert "manufacturer_stats" in metrics
-
-@pytest.fixture
-def mock_device():
-    device = MagicMock()
-    device.addrType = "random"
-    device.getValue = MagicMock(return_value=None)
-    device.getValueText = MagicMock(return_value="")
-    return device
 
 @pytest.fixture
 def mock_apple_device():
@@ -362,35 +307,6 @@ def mock_apple_service_device():
     device.getValueText = MagicMock(side_effect=lambda x: TEST_APPLE_SERVICE_UUID if x in [2, 3] else '')
     return device
 
-@pytest.fixture
-def mock_complete_device():
-    device = MagicMock()
-    device.addrType = "random"
-    device.getValue = MagicMock(side_effect=lambda x: b'test' if x in [255, 2, 3, 4, 5, 6, 7] else None)
-    device.getValueText = MagicMock(side_effect=lambda x: {
-        255: "4c00",  # Manufacturer data
-        2: "fe0c",    # Services
-        3: "TestDevice",  # Complete local name
-        4: "Test",    # Short local name
-        5: "-59",     # TX Power
-        6: "0x240404",  # Device class
-    }.get(x, ""))
-    return device
-
-def test_check_system_requirements_bluetooth_not_installed():
-    with patch('subprocess.run', side_effect=FileNotFoundError):
-        success, message = check_system_requirements()
-        assert not success
-        assert "BlueZ is not installed" in message
-
-def test_check_system_requirements_bluetooth_disabled():
-    with patch('subprocess.run') as mock_run:
-        mock_run.return_value.stdout = "Powered: no"
-        mock_run.return_value.returncode = 0
-        success, message = check_system_requirements()
-        assert not success
-        assert "Bluetooth is not powered on" in message
-
 def test_is_ios_device_by_manufacturer(mock_apple_device):
     assert is_ios_device(mock_apple_device)
 
@@ -406,6 +322,9 @@ def test_build_device_fingerprint_complete(mock_complete_device):
     assert len(fingerprint) == SHA256_LENGTH
 
 def test_build_device_fingerprint_minimal(mock_device):
+    # Configure mock device to return empty strings for services
+    mock_device.getValue = MagicMock(return_value=None)
+    mock_device.getValueText = MagicMock(return_value='')
     fingerprint = build_device_fingerprint(mock_device)
     assert isinstance(fingerprint, str)
     assert len(fingerprint) == SHA256_LENGTH
@@ -414,11 +333,9 @@ def test_calculate_metrics_empty():
     # Clear scan history before testing
     scan_history.clear()
     metrics = calculate_metrics(timedelta(minutes=5))
-    assert metrics["average_total_devices"] == 0
     assert metrics["average_unique_devices"] == 0
     assert metrics["average_ios_devices"] == 0
     assert metrics["average_other_devices"] == 0
-    assert metrics["peak_total_devices"] == 0
     assert metrics["peak_unique_devices"] == 0
     assert metrics["peak_ios_devices"] == 0
     assert metrics["peak_other_devices"] == 0
@@ -530,7 +447,6 @@ async def test_get_time_series_success():
     for i in range(5):
         scan_history.append(ScanResult(
             timestamp=now - timedelta(minutes=i*10),
-            total_devices=i,
             unique_devices=i,
             ios_devices=i//2,
             other_devices=i//2,

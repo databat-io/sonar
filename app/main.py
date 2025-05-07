@@ -218,13 +218,16 @@ def build_device_fingerprint(device: Any) -> str:
             # If we don't have manufacturer data, use the address type
             fingerprint_components.append("android_random_addr")
 
-    # If we have no stable identifiers, fall back to MAC address
+    # If we have no components, use the address type as a last resort
     if not fingerprint_components:
-        fingerprint_components.append(f"addr:{device.addr}")
+        fingerprint_components.append(f"addr_type:{device.addrType}")
 
-    # Create a stable fingerprint
-    fingerprint = '|'.join(sorted(fingerprint_components))
-    return hashlib.sha256(fingerprint.encode()).hexdigest()
+    # Sort components for consistent ordering
+    fingerprint_components.sort()
+
+    # Create a hash of all components
+    fingerprint = hashlib.sha256('|'.join(fingerprint_components).encode()).hexdigest()
+    return fingerprint
 
 def calculate_metrics(time_window: timedelta) -> dict[str, Any]:
     """
@@ -392,7 +395,7 @@ async def get_latest_scan() -> dict[str, Any]:
                 "ios_devices": latest_scan.ios_devices,
                 "other_devices": latest_scan.other_devices,
                 "manufacturer_stats": latest_scan.manufacturer_stats,
-                "scan_duration_seconds": 10  # Fixed duration for background scans
+                "scan_duration_seconds": SCAN_DURATION_SECONDS
             }
         else:
             current_scan = {
@@ -421,17 +424,17 @@ async def get_latest_scan() -> dict[str, Any]:
 @app.get("/health")
 async def health_check() -> dict[str, str]:
     """
-    Simple health check endpoint that also verifies system requirements.
+    Check if the system meets the requirements for BLE scanning.
     Returns:
-        A dictionary with health status and message.
+        Dictionary containing status and message.
     """
     success, message = check_system_requirements()
-    return {
-        "status": "healthy" if success else "unhealthy",
-        "message": message
-    }
+    if not success:
+        raise HTTPException(status_code=500, detail=message)
+    return {"status": "healthy", "message": message}
 
 def _assign_results_to_slots(scan_history, start_time, interval_minutes, time_slots):
+    """Assign scan results to time slots."""
     for result in scan_history:
         if result.timestamp < start_time:
             continue
@@ -444,8 +447,8 @@ def _assign_results_to_slots(scan_history, start_time, interval_minutes, time_sl
             slot_time = min(time_slots.keys(), key=lambda t: abs((t - slot_time).total_seconds()))
         time_slots[slot_time].append(result)
 
-
 def _build_time_slot_stats(slot_time, results):
+    """Build statistics for a time slot."""
     if results:
         unique_devices = [r.unique_devices for r in results]
         ios_devices = [r.ios_devices for r in results]
