@@ -297,7 +297,7 @@ async def background_scan():
             # Create and store scan result
             scan_result = ScanResult(
                 timestamp=datetime.now(),
-                total_devices=len(devices),
+                total_devices=len(unique_devices),
                 unique_devices=len(unique_devices),
                 ios_devices=len(ios_devices),
                 other_devices=len(unique_devices) - len(ios_devices),
@@ -309,7 +309,7 @@ async def background_scan():
             if persistence.should_save():
                 persistence.save_history(list(scan_history))
 
-            logger.info(f"Background scan completed: {len(devices)} devices found")
+            logger.info(f"Background scan completed: {len(unique_devices)} unique devices found")
 
         except Exception as e:
             logger.error(f"Error in background scan: {e!s}")
