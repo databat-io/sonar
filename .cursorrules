@@ -1,0 +1,71 @@
+# Sonar - BLE Device Counter Project Rules
+
+## Project Overview
+This is a FastAPI-based service for counting and analyzing Bluetooth Low Energy (BLE) devices in proximity.
+The service provides real-time scanning, device tracking, and historical data analysis.
+
+## Testing
+### Local Development
+Run tests in the Docker test container:
+```bash
+# Build test container
+docker build -t sonar-test -f Dockerfile.test .
+
+# Run tests with coverage
+docker run --rm sonar-test pytest tests/ --cov=app --cov-report=term-missing
+```
+
+### CI/CD
+Tests run automatically via GitHub Actions on:
+- Push to master branch
+- Pull requests to master branch
+
+The workflow:
+1. Builds test container from Dockerfile.test
+2. Runs pytest with coverage reporting
+3. Verifies minimum 80% coverage
+4. Fails if coverage threshold not met
+
+### Test Requirements
+- All tests must use pytest fixtures for mocking
+- Mock all Bluetooth hardware interactions
+- Use pytest-asyncio for async endpoint tests
+- Each endpoint needs both success and error case tests
+- Test all error handling paths
+- Maintain minimum 80% coverage
+
+## Code Standards
+- Python 3.11+ required
+- Use FastAPI for all endpoints
+- All BLE operations must handle hardware errors gracefully
+- Manufacturer data must use Nordic Semiconductor's database
+- All endpoints must have error handling
+- All functions must have type hints
+- All public functions must have docstrings
+
+## Docker Requirements
+- Use python:3.11-slim as base image
+- Include all system dependencies in Dockerfile
+- Test container must be built from Dockerfile.test
+- Production container must be built from Dockerfile
+- Containers must handle Bluetooth hardware access properly
+
+## Data Persistence
+- Save scan history to disk every hour
+- Load historical data on startup
+- Use /data volume for persistence
+- Backup data regularly
+
+## API Standards
+- All endpoints must return JSON
+- Use proper HTTP status codes
+- Include error details in responses
+- Document all parameters
+- Include rate limiting where appropriate
+
+## Monitoring
+- Log all Bluetooth errors
+- Track scan statistics
+- Monitor device counts
+- Track manufacturer distributions
+- Keep historical metrics

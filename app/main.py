@@ -52,9 +52,12 @@ def check_system_requirements() -> tuple[bool, str]:
     """
     try:
         # Check if BlueZ is installed
-        subprocess.run(['bluetoothctl', '--version'],
-                      capture_output=True,
-                      check=True)
+        result = subprocess.run(['bluetoothctl', '--version'],
+                              capture_output=True,
+                              text=True)
+        print(f"bluetoothctl --version result: {result.returncode}, {result.stdout}")
+        if result.returncode != 0:
+            return False, "BlueZ is not installed or not accessible"
     except (subprocess.SubprocessError, FileNotFoundError):
         return False, "BlueZ is not installed or not accessible"
 
@@ -63,7 +66,20 @@ def check_system_requirements() -> tuple[bool, str]:
         result = subprocess.run(['bluetoothctl', 'show'],
                               capture_output=True,
                               text=True)
-        if 'Powered: no' in result.stdout:
+        print(f"bluetoothctl show result: {result.returncode}, {result.stdout}")
+        if result.returncode != 0:
+            return False, "Could not check Bluetooth status"
+
+        # Parse the output line by line to find Powered status
+        powered = False
+        for line in result.stdout.splitlines():
+            print(f"Checking line: {line}")
+            if line.strip().startswith('Powered:'):
+                powered = line.strip().endswith('yes')
+                print(f"Found Powered line: {line}, powered = {powered}")
+                break
+
+        if not powered:
             return False, "Bluetooth is not powered on"
     except subprocess.SubprocessError:
         return False, "Could not check Bluetooth status"
@@ -199,6 +215,22 @@ def calculate_metrics(time_window: timedelta) -> Dict:
         "manufacturer_stats": manufacturer_stats
     }
 
+def setup_bluetooth():
+    """Set up Bluetooth adapter for scanning."""
+    try:
+        # Reset the Bluetooth adapter
+        subprocess.run(['hciconfig', 'hci0', 'reset'], check=True)
+        # Enable scanning
+        subprocess.run(['hciconfig', 'hci0', 'up'], check=True)
+        # Set scan parameters
+        subprocess.run(['hciconfig', 'hci0', 'lescan'], check=True)
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error setting up Bluetooth: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to set up Bluetooth adapter: {str(e)}"
+        )
+
 @app.get("/scan")
 async def scan_devices(timeout: int = 10) -> Dict:
     """
@@ -216,6 +248,9 @@ async def scan_devices(timeout: int = 10) -> Dict:
         raise HTTPException(status_code=500, detail=message)
 
     try:
+        # Set up Bluetooth adapter
+        setup_bluetooth()
+
         logger.info(f"Starting BLE scan with timeout {timeout}s")
         scanner = Scanner().withDelegate(ScanDelegate())
         devices = scanner.scan(float(timeout))

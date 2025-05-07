@@ -3,9 +3,10 @@ FROM python:3.11-slim
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     bluez \
-    bluez-firmware \
+    bluetooth \
+    libbluetooth-dev \
     build-essential \
-    python3-dev \
+    pkg-config \
     libglib2.0-dev \
     && rm -rf /var/lib/apt/lists/*
 
@@ -16,8 +17,15 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install test dependencies
+RUN pip install --no-cache-dir pytest pytest-cov pytest-asyncio httpx
+
 # Copy application code
 COPY . .
 
-# Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Create data directory
+RUN mkdir -p /data && chmod 777 /data
+
+# Set environment variables for testing
+ENV PYTHONPATH=/app
+ENV TESTING=true

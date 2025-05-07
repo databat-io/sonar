@@ -1,0 +1,34 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build test container
+      run: docker build -t sonar-test -f Dockerfile.test .
+
+    - name: Run tests
+      run: |
+        docker run --rm sonar-test pytest tests/ --cov=app --cov-report=term-missing
+
+    - name: Check test coverage
+      run: |
+        # Extract coverage percentage from the test output
+        COVERAGE=$(docker run --rm sonar-test pytest tests/ --cov=app --cov-report=term-missing | grep "TOTAL" | awk '{print $4}' | sed 's/%//')
+
+        # Check if coverage is at least 80%
+        if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+          echo "Test coverage ($COVERAGE%) is below the required 80%"
+          exit 1
+        else
+          echo "Test coverage ($COVERAGE%) meets the minimum requirement of 80%"
+        fi

@@ -14,7 +14,7 @@ A FastAPI-based service for counting and analyzing Bluetooth Low Energy (BLE) de
 
 ## Requirements
 
-- Python 3.9+
+- Python 3.11+
 - BlueZ (Linux Bluetooth stack)
 - Bluetooth hardware with BLE support
 - Proper permissions to access Bluetooth (usually requires root or special capabilities)
