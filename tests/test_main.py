@@ -1,8 +1,11 @@
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
+import asyncio
+import subprocess
 
 import pytest
 from fastapi.testclient import TestClient
+from fastapi import HTTPException
 
 from app.main import (
     COMPLETE_16B_SERVICES,
@@ -16,6 +19,11 @@ from app.main import (
     check_system_requirements,
     is_ios_device,
     scan_history,
+    ScanDelegate,
+    BackgroundScanner,
+    setup_bluetooth,
+    background_scan,
+    get_time_series,
 )
 from app.persistence import ScanResult
 
@@ -32,6 +40,9 @@ HTTP_OK = 200
 HTTP_ERROR = 500
 HTTP_BAD_REQUEST = 400
 SHA256_LENGTH = 64
+TEST_APPLE_COMPANY_ID = "4c00"
+TEST_APPLE_SERVICE_UUID = "FD6F"  # Valid Apple Continuity UUID
+TEST_NON_APPLE_SERVICE_UUID = "fe0d"
 
 client = TestClient(app)
 
@@ -315,3 +326,217 @@ def test_calculate_metrics():
     assert "peak_ios_devices" in metrics
     assert "peak_other_devices" in metrics
     assert "manufacturer_stats" in metrics
+
+@pytest.fixture
+def mock_device():
+    device = MagicMock()
+    device.addrType = "random"
+    device.getValue = MagicMock(return_value=None)
+    device.getValueText = MagicMock(return_value="")
+    return device
+
+@pytest.fixture
+def mock_apple_device():
+    device = MagicMock()
+    device.addrType = "random"
+    device.getValue = MagicMock(side_effect=lambda x: b'4c00' if x == 255 else None)
+    device.getValueText = MagicMock(side_effect=lambda x: TEST_APPLE_COMPANY_ID if x == 255 else '')
+    return device
+
+@pytest.fixture
+def mock_apple_service_device():
+    device = MagicMock()
+    device.addrType = "random"
+    device.getValue = MagicMock(side_effect=lambda x: b'fd6f' if x in [2, 3] else None)
+    device.getValueText = MagicMock(side_effect=lambda x: TEST_APPLE_SERVICE_UUID if x in [2, 3] else '')
+    return device
+
+@pytest.fixture
+def mock_complete_device():
+    device = MagicMock()
+    device.addrType = "random"
+    device.getValue = MagicMock(side_effect=lambda x: b'test' if x in [255, 2, 3, 4, 5, 6, 7] else None)
+    device.getValueText = MagicMock(side_effect=lambda x: {
+        255: "4c00",  # Manufacturer data
+        2: "fe0c",    # Services
+        3: "TestDevice",  # Complete local name
+        4: "Test",    # Short local name
+        5: "-59",     # TX Power
+        6: "0x240404",  # Device class
+    }.get(x, ""))
+    return device
+
+def test_check_system_requirements_bluetooth_not_installed():
+    with patch('subprocess.run', side_effect=FileNotFoundError):
+        success, message = check_system_requirements()
+        assert not success
+        assert "BlueZ is not installed" in message
+
+def test_check_system_requirements_bluetooth_disabled():
+    with patch('subprocess.run') as mock_run:
+        mock_run.return_value.stdout = "Powered: no"
+        mock_run.return_value.returncode = 0
+        success, message = check_system_requirements()
+        assert not success
+        assert "Bluetooth is not powered on" in message
+
+def test_check_system_requirements_success():
+    with patch('subprocess.run') as mock_run:
+        mock_run.return_value.stdout = "Powered: yes"
+        mock_run.return_value.returncode = 0
+        success, message = check_system_requirements()
+        assert success
+        assert "System requirements met" in message
+
+def test_is_ios_device_by_manufacturer(mock_apple_device):
+    assert is_ios_device(mock_apple_device)
+
+def test_is_ios_device_by_service(mock_apple_service_device):
+    assert is_ios_device(mock_apple_service_device)
+
+def test_is_ios_device_negative(mock_device):
+    assert not is_ios_device(mock_device)
+
+def test_build_device_fingerprint_complete(mock_complete_device):
+    fingerprint = build_device_fingerprint(mock_complete_device)
+    assert isinstance(fingerprint, str)
+    assert len(fingerprint) == 64  # SHA-256 hash length
+
+def test_build_device_fingerprint_minimal(mock_device):
+    fingerprint = build_device_fingerprint(mock_device)
+    assert isinstance(fingerprint, str)
+    assert len(fingerprint) == 64  # SHA-256 hash length
+
+def test_calculate_metrics_empty():
+    # Clear scan history before testing
+    scan_history.clear()
+    metrics = calculate_metrics(timedelta(minutes=5))
+    assert metrics["average_total_devices"] == 0
+    assert metrics["average_unique_devices"] == 0
+    assert metrics["average_ios_devices"] == 0
+    assert metrics["average_other_devices"] == 0
+    assert metrics["peak_total_devices"] == 0
+    assert metrics["peak_unique_devices"] == 0
+    assert metrics["peak_ios_devices"] == 0
+    assert metrics["peak_other_devices"] == 0
+    assert isinstance(metrics["manufacturer_stats"], dict)
+    assert len(metrics["manufacturer_stats"]) == 0
+
+def test_scan_delegate():
+    delegate = ScanDelegate()
+    assert delegate is not None
+
+@pytest.mark.asyncio
+async def test_background_scanner():
+    scanner = BackgroundScanner()
+    assert scanner.task is None
+
+    # Test start
+    await scanner.start()
+    assert scanner.task is not None
+    assert not scanner.task.done()
+
+    # Test stop
+    await scanner.stop()
+    assert scanner.task is None
+
+@pytest.mark.asyncio
+async def test_background_scanner_double_start():
+    scanner = BackgroundScanner()
+    await scanner.start()
+    task1 = scanner.task
+    await scanner.start()
+    assert scanner.task is task1  # Should not create a new task
+
+@pytest.mark.asyncio
+async def test_background_scanner_double_stop():
+    scanner = BackgroundScanner()
+    await scanner.start()
+    await scanner.stop()
+    await scanner.stop()  # Should not raise an error
+    assert scanner.task is None
+
+def test_setup_bluetooth_success():
+    with patch('subprocess.run') as mock_run:
+        mock_run.return_value.returncode = 0
+        setup_bluetooth()  # Should not raise an exception
+        assert mock_run.call_count == 4  # Updated to expect 4 commands
+
+def test_setup_bluetooth_failure():
+    with patch('subprocess.run') as mock_run:
+        mock_run.side_effect = subprocess.CalledProcessError(1, 'hciconfig')
+        with pytest.raises(HTTPException) as exc_info:
+            setup_bluetooth()
+        assert exc_info.value.status_code == 500
+        assert "Failed to set up Bluetooth adapter" in str(exc_info.value.detail)
+
+@pytest.mark.asyncio
+async def test_background_scan_system_requirements_not_met():
+    with patch('app.main.check_system_requirements') as mock_check:
+        mock_check.return_value = (False, "Test error")
+        with patch('asyncio.sleep') as mock_sleep:
+            mock_sleep.side_effect = asyncio.CancelledError  # Stop the loop
+            with pytest.raises(asyncio.CancelledError):
+                await background_scan()
+
+@pytest.mark.asyncio
+async def test_background_scan_success():
+    with patch('app.main.check_system_requirements') as mock_check, \
+         patch('app.main.setup_bluetooth') as mock_setup, \
+         patch('bluepy.btle.Scanner') as mock_scanner_class, \
+         patch('app.main.logger') as mock_logger:  # Mock logger to avoid permission error messages
+
+        # Mock successful system check
+        mock_check.return_value = (True, "OK")
+
+        # Mock scanner
+        mock_scanner = MagicMock()
+        mock_scanner.scan.return_value = []
+        mock_scanner_class.return_value.withDelegate.return_value = mock_scanner
+
+        # Run scan and cancel after first iteration
+        with patch('asyncio.sleep') as mock_sleep:
+            mock_sleep.side_effect = asyncio.CancelledError
+            with pytest.raises(asyncio.CancelledError):
+                await background_scan()
+
+        # Verify calls
+        mock_check.assert_called_once()
+        mock_setup.assert_called_once()
+        mock_logger.info.assert_called_with("Starting background BLE scan")
+
+@pytest.mark.asyncio
+async def test_get_time_series_invalid_interval():
+    with pytest.raises(HTTPException) as exc_info:
+        await get_time_series(interval_minutes=0)
+    assert exc_info.value.status_code == 400
+    assert "must be between 1 and 1440" in str(exc_info.value.detail)
+
+    with pytest.raises(HTTPException) as exc_info:
+        await get_time_series(interval_minutes=1441)  # More than 24 hours
+    assert exc_info.value.status_code == 400
+    assert "must be between 1 and 1440" in str(exc_info.value.detail)
+
+@pytest.mark.asyncio
+async def test_get_time_series_success():
+    # Clear scan history
+    scan_history.clear()
+
+    # Add some test data
+    now = datetime.now()
+    for i in range(5):
+        scan_history.append(ScanResult(
+            timestamp=now - timedelta(minutes=i*10),
+            total_devices=i,
+            unique_devices=i,
+            ios_devices=i//2,
+            other_devices=i//2,
+            manufacturer_stats={"Test": i}
+        ))
+
+    # Test with 30-minute interval
+    result = await get_time_series(interval_minutes=30)
+    assert "summary" in result
+    assert "time_series" in result
+    assert len(result["time_series"]) > 0
+    assert all(isinstance(m, dict) for m in result["time_series"])

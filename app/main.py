@@ -130,9 +130,9 @@ def is_ios_device(device) -> bool:
     if device.getValue(COMPLETE_16B_SERVICES):
         services.append(device.getValueText(COMPLETE_16B_SERVICES))
 
-    services_str = ''.join(services)
+    services_str = ''.join(services).upper()
     for uuid in APPLE_SERVICE_UUIDS:
-        if uuid in services_str:
+        if uuid.replace('0x', '').upper() in services_str:
             return True
 
     return False
@@ -243,8 +243,9 @@ def setup_bluetooth():
         subprocess.run(['hciconfig', 'hci0', 'reset'], check=True)
         # Enable scanning
         subprocess.run(['hciconfig', 'hci0', 'up'], check=True)
-        # Set scan parameters
-        subprocess.run(['hciconfig', 'hci0', 'lescan'], check=True)
+        # Enable LE scan mode using bluetoothctl
+        subprocess.run(['bluetoothctl', 'scan', 'off'], check=True)  # Stop any existing scans
+        subprocess.run(['bluetoothctl', 'power', 'on'], check=True)  # Ensure power is on
     except subprocess.CalledProcessError as e:
         logger.error(f"Error setting up Bluetooth: {e}")
         raise HTTPException(
