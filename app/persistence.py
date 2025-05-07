@@ -4,7 +4,7 @@ Data persistence module for saving and loading scan history.
 import json
 import logging
 from dataclasses import asdict, dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,15 @@ class ScanResult:
     ios_devices: int
     other_devices: int
     manufacturer_stats: dict[str, int]
-    session_stats: dict[str, float]  # Added session statistics
+    session_stats: dict[str, float] | None = None
+
+    def __post_init__(self):
+        if self.session_stats is None:
+            self.session_stats = {
+                "total_sessions": 0,
+                "active_sessions": 0,
+                "average_dwell_time": 0
+            }
 
 class DataPersistence:
     """Handles saving and loading scan history."""
@@ -32,7 +40,7 @@ class DataPersistence:
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.history_file = self.data_dir / "scan_history.json"
-        self.save_interval = save_interval_minutes
+        self.save_interval = timedelta(minutes=save_interval_minutes)
         self.last_save = datetime.now()
 
     def save_history(self, history: list[ScanResult]) -> None:
@@ -90,5 +98,5 @@ class DataPersistence:
             return []
 
     def should_save(self) -> bool:
-        """Check if it's time to save the history."""
-        return (datetime.now() - self.last_save).total_seconds() >= self.save_interval * 60
+        """Check if enough time has passed since last save."""
+        return datetime.now() - self.last_save >= self.save_interval

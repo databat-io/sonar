@@ -88,15 +88,16 @@ def test_load_history_corrupted_file(temp_data_dir):
 def test_should_save_timing():
     persistence = DataPersistence()
 
-    # Should save initially
-    assert persistence.should_save(interval_minutes=SAVE_INTERVAL_MINUTES) is False
+    # Should not save initially (just created)
+    assert persistence.should_save() is False
 
-    # Simulate time passing
-    persistence.last_save_time = datetime.now() - timedelta(minutes=SAVE_INTERVAL_MINUTES + 1)
-    assert persistence.should_save(interval_minutes=SAVE_INTERVAL_MINUTES) is True
+    # Set last_save to 61 minutes ago
+    persistence.last_save = datetime.now() - timedelta(minutes=61)
+    assert persistence.should_save() is True
 
-    persistence.last_save_time = datetime.now() - timedelta(minutes=SAVE_INTERVAL_MINUTES // 2)
-    assert persistence.should_save(interval_minutes=SAVE_INTERVAL_MINUTES) is False
+    # Update last_save to now
+    persistence.last_save = datetime.now()
+    assert persistence.should_save() is False
 
 def test_save_history_file_permission_error(temp_data_dir, sample_scan_result):
     persistence = DataPersistence(data_dir=temp_data_dir)
