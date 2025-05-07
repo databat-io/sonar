@@ -21,7 +21,6 @@ from .core.constants import (
     SCAN_DURATION_SECONDS,
     SCAN_INTERVAL_SECONDS,
     SHORT_LOCAL_NAME,
-    TX_POWER_LEVEL,
 )
 from .manufacturers import get_manufacturer_from_device
 from .persistence import DataPersistence, ScanResult
@@ -137,46 +136,80 @@ def is_ios_device(device) -> bool:
 
     return False
 
+def _get_service_components(device) -> list[str]:
+    """Extract service information from device."""
+    services = []
+    if device.getValue(INCOMPLETE_16B_SERVICES):
+        services.append(device.getValueText(INCOMPLETE_16B_SERVICES))
+    if device.getValue(COMPLETE_16B_SERVICES):
+        services.append(device.getValueText(COMPLETE_16B_SERVICES))
+    if services:
+        services_str = ''.join(sorted(services))
+        return [f"services:{services_str}"]
+    return []
+
+def _get_name_components(device) -> list[str]:
+    """Extract name information from device."""
+    if device.getValue(COMPLETE_LOCAL_NAME):
+        name = device.getValueText(COMPLETE_LOCAL_NAME)
+        if len(name) > 1 and not all(c in '0123456789abcdefABCDEF' for c in name):
+            return [f"name:{name}"]
+    elif device.getValue(SHORT_LOCAL_NAME):
+        name = device.getValueText(SHORT_LOCAL_NAME)
+        if len(name) > 1 and not all(c in '0123456789abcdefABCDEF' for c in name):
+            return [f"short_name:{name}"]
+    return []
+
+def _get_manufacturer_components(device) -> list[str]:
+    """Extract manufacturer information from device."""
+    if device.getValue(MANUFACTURER_DATA_TYPE):
+        manu_data = device.getValueText(MANUFACTURER_DATA_TYPE)
+        if manu_data:
+            if manu_data.startswith(APPLE_COMPANY_ID):
+                return [f"manu:{manu_data}"]
+            return [f"manu:{manu_data[:4]}"]
+    return []
+
 def build_device_fingerprint(device) -> str:
     """
     Creates a fingerprint for a BLE device based on its advertising data.
+    Handles MAC randomization by focusing on stable device identifiers and platform-specific patterns.
     """
     fingerprint_components = []
 
-    # Basic device information
-    fingerprint_components.append(f"addr_type:{device.addrType}")
+    # Get manufacturer data (most stable identifier)
+    fingerprint_components.extend(_get_manufacturer_components(device))
 
-    # Manufacturer data
-    if device.getValue(MANUFACTURER_DATA_TYPE):
-        manu_data = device.getValueText(MANUFACTURER_DATA_TYPE)
-        fingerprint_components.append(f"manu:{manu_data[:4]}")
+    # Get service information (stable across MAC changes)
+    fingerprint_components.extend(_get_service_components(device))
 
-    # Service information
-    if device.getValue(INCOMPLETE_16B_SERVICES):
-        services = device.getValueText(INCOMPLETE_16B_SERVICES)
-        fingerprint_components.append(f"services_16b:{services}")
+    # Get device name (if available and not random)
+    fingerprint_components.extend(_get_name_components(device))
 
-    if device.getValue(COMPLETE_16B_SERVICES):
-        services = device.getValueText(COMPLETE_16B_SERVICES)
-        fingerprint_components.append(f"services_16b_complete:{services}")
-
-    # Device name
-    if device.getValue(COMPLETE_LOCAL_NAME):
-        name = device.getValueText(COMPLETE_LOCAL_NAME)
-        fingerprint_components.append(f"name:{name}")
-    elif device.getValue(SHORT_LOCAL_NAME):
-        name = device.getValueText(SHORT_LOCAL_NAME)
-        fingerprint_components.append(f"short_name:{name}")
-
-    # TX Power Level
-    if device.getValue(TX_POWER_LEVEL):
-        tx_power = device.getValueText(TX_POWER_LEVEL)
-        fingerprint_components.append(f"tx_power:{tx_power}")
-
-    # Device Class
+    # Device Class (stable across MAC changes)
     if device.getValue(DEVICE_CLASS):
         device_class = device.getValueText(DEVICE_CLASS)
         fingerprint_components.append(f"class:{device_class}")
+
+    # For iOS devices, check for specific advertising patterns
+    if device.addrType == "random" and device.addr.startswith("40:00"):
+        # This is likely an iOS device with a private address
+        # The manufacturer data and services are more reliable identifiers
+        if not any("manu:" in comp for comp in fingerprint_components):
+            # If we don't have manufacturer data, use the address type
+            fingerprint_components.append("ios_private_addr")
+
+    # For Android devices, check for specific advertising patterns
+    if device.addrType == "random" and not device.addr.startswith("40:00"):
+        # This is likely an Android device with a random address
+        # The manufacturer data and services are more reliable identifiers
+        if not any("manu:" in comp for comp in fingerprint_components):
+            # If we don't have manufacturer data, use the address type
+            fingerprint_components.append("android_random_addr")
+
+    # If we have no stable identifiers, fall back to MAC address
+    if not fingerprint_components:
+        fingerprint_components.append(f"addr:{device.addr}")
 
     # Create a stable fingerprint
     fingerprint = '|'.join(sorted(fingerprint_components))

@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import subprocess
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
@@ -45,6 +46,14 @@ TEST_APPLE_SERVICE_UUID = "FD6F"  # Valid Apple Continuity UUID
 TEST_NON_APPLE_SERVICE_UUID = "fe0d"
 TEST_MANUFACTURER_DATA_TYPE = 255
 TEST_SETUP_BLUETOOTH_COMMANDS = 4
+
+# MAC randomization test constants
+IOS_PRIVATE_ADDR_1 = "40:00:11:22:33:44"
+IOS_PRIVATE_ADDR_2 = "40:00:55:66:77:88"
+ANDROID_RANDOM_ADDR_1 = "42:11:22:33:44:55"
+ANDROID_RANDOM_ADDR_2 = "42:aa:bb:cc:dd:ee"
+TEST_IOS_MANU_DATA = "4c0012345678"  # Full Apple manufacturer data
+TEST_ANDROID_MANU_DATA = "005912345678"  # Nordic Semiconductor manufacturer data
 
 client = TestClient(app)
 
@@ -534,3 +543,124 @@ async def test_get_time_series_success():
     assert "time_series" in result
     assert len(result["time_series"]) > 0
     assert all(isinstance(m, dict) for m in result["time_series"])
+
+@pytest.fixture
+def mock_ios_device():
+    """Create a mock iOS device with private address."""
+    device = MagicMock()
+    device.addr = IOS_PRIVATE_ADDR_1
+    device.addrType = "random"
+    device.getValue = MagicMock(side_effect=lambda x: b'4c0012345678' if x == TEST_MANUFACTURER_DATA_TYPE else None)
+    device.getValueText = MagicMock(side_effect=lambda x: TEST_IOS_MANU_DATA if x == TEST_MANUFACTURER_DATA_TYPE else '')
+    return device
+
+@pytest.fixture
+def mock_ios_device_different_mac():
+    """Create a mock iOS device with a different private address."""
+    device = MagicMock()
+    device.addr = IOS_PRIVATE_ADDR_2
+    device.addrType = "random"
+    device.getValue = MagicMock(side_effect=lambda x: b'4c0012345678' if x == TEST_MANUFACTURER_DATA_TYPE else None)
+    device.getValueText = MagicMock(side_effect=lambda x: TEST_IOS_MANU_DATA if x == TEST_MANUFACTURER_DATA_TYPE else '')
+    return device
+
+@pytest.fixture
+def mock_android_device():
+    """Create a mock Android device with random address."""
+    device = MagicMock()
+    device.addr = ANDROID_RANDOM_ADDR_1
+    device.addrType = "random"
+    device.getValue = MagicMock(side_effect=lambda x: b'005912345678' if x == TEST_MANUFACTURER_DATA_TYPE else None)
+    device.getValueText = MagicMock(side_effect=lambda x: TEST_ANDROID_MANU_DATA if x == TEST_MANUFACTURER_DATA_TYPE else '')
+    return device
+
+@pytest.fixture
+def mock_android_device_different_mac():
+    """Create a mock Android device with a different random address."""
+    device = MagicMock()
+    device.addr = ANDROID_RANDOM_ADDR_2
+    device.addrType = "random"
+    device.getValue = MagicMock(side_effect=lambda x: b'005912345678' if x == TEST_MANUFACTURER_DATA_TYPE else None)
+    device.getValueText = MagicMock(side_effect=lambda x: TEST_ANDROID_MANU_DATA if x == TEST_MANUFACTURER_DATA_TYPE else '')
+    return device
+
+def test_ios_mac_randomization(mock_ios_device, mock_ios_device_different_mac):
+    """Test that iOS devices with different private addresses are recognized as the same device."""
+    # Get fingerprints for both devices
+    fingerprint1 = build_device_fingerprint(mock_ios_device)
+    fingerprint2 = build_device_fingerprint(mock_ios_device_different_mac)
+
+    # The fingerprints should be identical despite different MAC addresses
+    assert fingerprint1 == fingerprint2
+    assert "ios_private_addr" not in fingerprint1  # Should use manufacturer data instead
+
+def test_android_mac_randomization(mock_android_device, mock_android_device_different_mac):
+    """Test that Android devices with different random addresses are recognized as the same device."""
+    # Get fingerprints for both devices
+    fingerprint1 = build_device_fingerprint(mock_android_device)
+    fingerprint2 = build_device_fingerprint(mock_android_device_different_mac)
+
+    # The fingerprints should be identical despite different MAC addresses
+    assert fingerprint1 == fingerprint2
+    assert "android_random_addr" not in fingerprint1  # Should use manufacturer data instead
+
+def test_ios_device_without_manufacturer_data():
+    """Test iOS device identification when manufacturer data is not available."""
+    device = MagicMock()
+    device.addr = IOS_PRIVATE_ADDR_1
+    device.addrType = "random"
+    device.getValue = MagicMock(return_value=None)
+    device.getValueText = MagicMock(return_value='')
+
+    # Get the fingerprint components before hashing
+    fingerprint_components = []
+    if device.addrType == "random" and device.addr.startswith("40:00"):
+        fingerprint_components.append("ios_private_addr")
+
+    # Create the fingerprint
+    fingerprint = '|'.join(sorted(fingerprint_components))
+    hashed_fingerprint = hashlib.sha256(fingerprint.encode()).hexdigest()
+
+    # Verify the components
+    assert "ios_private_addr" in fingerprint_components
+    assert build_device_fingerprint(device) == hashed_fingerprint
+
+def test_android_device_without_manufacturer_data():
+    """Test Android device identification when manufacturer data is not available."""
+    device = MagicMock()
+    device.addr = ANDROID_RANDOM_ADDR_1
+    device.addrType = "random"
+    device.getValue = MagicMock(return_value=None)
+    device.getValueText = MagicMock(return_value='')
+
+    # Get the fingerprint components before hashing
+    fingerprint_components = []
+    if device.addrType == "random" and not device.addr.startswith("40:00"):
+        fingerprint_components.append("android_random_addr")
+
+    # Create the fingerprint
+    fingerprint = '|'.join(sorted(fingerprint_components))
+    hashed_fingerprint = hashlib.sha256(fingerprint.encode()).hexdigest()
+
+    # Verify the components
+    assert "android_random_addr" in fingerprint_components
+    assert build_device_fingerprint(device) == hashed_fingerprint
+
+def test_different_ios_devices():
+    """Test that different iOS devices are recognized as different devices."""
+    device1 = MagicMock()
+    device1.addr = IOS_PRIVATE_ADDR_1
+    device1.addrType = "random"
+    device1.getValue = MagicMock(side_effect=lambda x: b'4c0012345678' if x == TEST_MANUFACTURER_DATA_TYPE else None)
+    device1.getValueText = MagicMock(side_effect=lambda x: "4c0012345678" if x == TEST_MANUFACTURER_DATA_TYPE else '')
+
+    device2 = MagicMock()
+    device2.addr = IOS_PRIVATE_ADDR_2
+    device2.addrType = "random"
+    device2.getValue = MagicMock(side_effect=lambda x: b'4c0098765432' if x == TEST_MANUFACTURER_DATA_TYPE else None)
+    device2.getValueText = MagicMock(side_effect=lambda x: "4c0098765432" if x == TEST_MANUFACTURER_DATA_TYPE else '')
+
+    fingerprint1 = build_device_fingerprint(device1)
+    fingerprint2 = build_device_fingerprint(device2)
+
+    assert fingerprint1 != fingerprint2  # Different manufacturer data = different devices
