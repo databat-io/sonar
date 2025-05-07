@@ -11,24 +11,29 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ScanResult:
+    """Represents the results of a BLE scan."""
     timestamp: datetime
     unique_devices: int
     ios_devices: int
     other_devices: int
     manufacturer_stats: dict[str, int]
+    session_stats: dict[str, float]  # Added session statistics
 
 class DataPersistence:
-    def __init__(self, data_dir: str = "/data") -> None:
+    """Handles saving and loading scan history."""
+    def __init__(self, data_dir: str = "/data", save_interval_minutes: int = 60) -> None:
         """
         Initialize data persistence with a storage directory.
 
         Args:
             data_dir: Directory where data will be stored
+            save_interval_minutes: Minimum minutes between saves
         """
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.history_file = self.data_dir / "scan_history.json"
-        self.last_save_time = datetime.now()
+        self.save_interval = save_interval_minutes
+        self.last_save = datetime.now()
 
     def save_history(self, history: list[ScanResult]) -> None:
         """
@@ -49,7 +54,7 @@ class DataPersistence:
             with open(self.history_file, 'w') as f:
                 json.dump(serializable_history, f)
 
-            self.last_save_time = datetime.now()
+            self.last_save = datetime.now()
             logger.info(f"Successfully saved {len(history)} scan results to {self.history_file}")
 
         except Exception as e:
@@ -84,15 +89,6 @@ class DataPersistence:
             logger.error(f"Failed to load scan history: {e!s}")
             return []
 
-    def should_save(self, interval_minutes: int = 60) -> bool:
-        """
-        Check if it's time to save based on the last save time.
-
-        Args:
-            interval_minutes: Minimum minutes between saves
-
-        Returns:
-            bool: True if it's time to save
-        """
-        time_since_last_save = datetime.now() - self.last_save_time
-        return time_since_last_save.total_seconds() >= interval_minutes * 60
+    def should_save(self) -> bool:
+        """Check if it's time to save the history."""
+        return (datetime.now() - self.last_save).total_seconds() >= self.save_interval * 60
