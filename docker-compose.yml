@@ -3,9 +3,11 @@ services:
     build: .
     container_name: ble-scanner
     restart: unless-stopped
+    network_mode: host  # Required for Bluetooth access
     volumes:
       - ble_data:/data
       - /var/run/dbus:/var/run/dbus  # Required for Bluetooth access
+      - /var/run/bluetooth:/var/run/bluetooth  # Required for Bluetooth access
     devices:
       - /dev/bus/usb:/dev/bus/usb    # Required for Bluetooth hardware access
     environment:
