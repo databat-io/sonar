@@ -1,5 +1,35 @@
 # BLE Device Counter
 
+## Quickstart
+
+1. **Clone the repository:**
+
+```bash
+git clone https://github.com/databat-io/sonar.git
+cd sonar
+```
+
+2. **On a Raspberry Pi (or any BlueZ-compatible Linux device):**
+
+- **With Docker (recommended):**
+
+```bash
+docker-compose up -d --build
+```
+
+- **Or, run locally:**
+
+```bash
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+3. **Access the API:**
+
+run `curl http://[device-ip]:8000/latest` to see statistics
+
+> **Note:** This project is primarily designed to run on a Raspberry Pi, but should in theory work on any other device with a BlueZ-compatible Bluetooth interface and the required permissions.
+
 A FastAPI-based service for counting and analyzing Bluetooth Low Energy (BLE) devices in proximity. This service provides detailed statistics about nearby BLE devices, including manufacturer identification and device type classification.
 
 ## Features
