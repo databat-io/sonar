@@ -24,7 +24,8 @@ from .core.constants import (
     SHORT_LOCAL_NAME,
 )
 from .manufacturers import get_manufacturer_from_device
-from .persistence import DataPersistence, ScanResult
+from .models import ScanResult
+from .persistence import DataPersistence
 from .session import SessionManager
 
 # Configure logging

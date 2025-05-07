@@ -13,3 +13,4 @@ celerybeat-schedule.db
 company_ids.json
 gunicorn.env
 celery.env
+.coverage
