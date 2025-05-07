@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ScanResult:
     timestamp: datetime
-    total_devices: int
     unique_devices: int
     ios_devices: int
     other_devices: int
