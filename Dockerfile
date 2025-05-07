@@ -3,7 +3,6 @@ FROM python:3.11-slim
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     bluez \
-    bluez-firmware \
     build-essential \
     python3-dev \
     libglib2.0-dev \
