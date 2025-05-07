@@ -8,24 +8,23 @@ from datetime import datetime, timedelta
 from bluepy.btle import DefaultDelegate, Scanner
 from fastapi import FastAPI, HTTPException
 
-from .manufacturers import get_manufacturer_from_device
-from .persistence import DataPersistence, ScanResult
 from .core.constants import (
-    MANUFACTURER_DATA_TYPE,
-    INCOMPLETE_16B_SERVICES,
+    APPLE_COMPANY_ID,
+    APPLE_SERVICE_UUIDS,
     COMPLETE_16B_SERVICES,
     COMPLETE_LOCAL_NAME,
-    SHORT_LOCAL_NAME,
-    TX_POWER_LEVEL,
     DEVICE_CLASS,
-    MAX_HISTORY_HOURS,
+    INCOMPLETE_16B_SERVICES,
+    MANUFACTURER_DATA_TYPE,
     MAX_HISTORY_MINUTES,
     MAX_TIME_SERIES_MINUTES,
-    SCAN_INTERVAL_SECONDS,
     SCAN_DURATION_SECONDS,
-    APPLE_SERVICE_UUIDS,
-    APPLE_COMPANY_ID
+    SCAN_INTERVAL_SECONDS,
+    SHORT_LOCAL_NAME,
+    TX_POWER_LEVEL,
 )
+from .manufacturers import get_manufacturer_from_device
+from .persistence import DataPersistence, ScanResult
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

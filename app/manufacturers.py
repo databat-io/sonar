@@ -65,7 +65,7 @@ MANUFACTURER_DB = {
     0x0056: "Apple Inc.",
     0x0057: "Apple Inc.",
     0x0058: "Apple Inc.",
-    0x0059: "Apple Inc.",
+    0x0059: "Nordic Semiconductor ASA",
     0x005A: "Apple Inc.",
     0x005B: "Apple Inc.",
     0x005C: "Apple Inc.",
@@ -260,9 +260,15 @@ def get_manufacturer_from_device(device) -> str:
         manu_data = device.getValueText(MANUFACTURER_DATA_TYPE)
         if manu_data and len(manu_data) >= MIN_MANUFACTURER_DATA_LENGTH:
             try:
-                # First two bytes are the company ID in little endian
-                company_id = int(manu_data[2:4] + manu_data[0:2], 16)
-                return lookup_manufacturer(company_id)
+                # Try both little-endian and big-endian formats
+                company_id_le = int(manu_data[2:4] + manu_data[0:2], 16)
+                company_id_be = int(manu_data[0:4], 16)
+
+                # Try little-endian first, then big-endian
+                manufacturer = lookup_manufacturer(company_id_le)
+                if manufacturer != "Unknown":
+                    return manufacturer
+                return lookup_manufacturer(company_id_be)
             except ValueError:
                 pass
     return "Unknown"
