@@ -5,9 +5,12 @@ import subprocess
 from collections import deque
 from datetime import datetime, timedelta
 from typing import Any
+from pathlib import Path
 
 from bluepy.btle import DefaultDelegate, Scanner
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from .core.constants import (
     APPLE_COMPANY_ID,
@@ -63,6 +66,10 @@ app = FastAPI(
     description="A simple API to count BLE devices in proximity",
     version="1.0.0"
 )
+
+# Mount static files
+frontend_path = Path(__file__).parent.parent / "frontend"
+app.mount("/static", StaticFiles(directory=str(frontend_path)), name="static")
 
 # Initialize data persistence and scanner
 persistence = DataPersistence()
@@ -616,3 +623,8 @@ async def get_time_series(interval_minutes: int = 60) -> dict[str, Any]:
         "summary": summary,
         "manufacturer_summary": manufacturer_summary
     }
+
+@app.get("/")
+async def get_dashboard():
+    """Serve the dashboard HTML file."""
+    return FileResponse(frontend_path / "index.html")

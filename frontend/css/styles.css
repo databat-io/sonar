@@ -1,0 +1,47 @@
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Smooth transitions for status changes */
+#scanStatus {
+    transition: color 0.3s ease;
+}
+
+/* Ensure table cells don't wrap unnecessarily */
+.whitespace-nowrap {
+    white-space: nowrap;
+}
+
+/* Add some spacing between chart and legend */
+#manufacturerChart {
+    margin-bottom: 1rem;
+}
+
+/* Ensure buttons have proper hover states */
+button {
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
+}
