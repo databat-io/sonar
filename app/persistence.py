@@ -3,7 +3,7 @@ Data persistence module for saving and loading scan history.
 """
 import json
 import logging
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -84,11 +84,17 @@ class DataPersistence:
             with open(self.history_file) as f:
                 history_data = json.load(f)
 
+            # Helper to filter only valid ScanResult fields
+            def filter_scanresult_fields(data):
+                valid_fields = {f.name for f in fields(ScanResult)}
+                return {k: v for k, v in data.items() if k in valid_fields}
+
             # Convert ISO format strings back to datetime objects
             history = []
             for result_dict in history_data:
                 result_dict['timestamp'] = datetime.fromisoformat(result_dict['timestamp'])
-                history.append(ScanResult(**result_dict))
+                filtered = filter_scanresult_fields(result_dict)
+                history.append(ScanResult(**filtered))
 
             logger.info(f"Successfully loaded {len(history)} scan results from {self.history_file}")
             return history

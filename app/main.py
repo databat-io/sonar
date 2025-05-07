@@ -11,6 +11,7 @@ from bluepy.btle import DefaultDelegate, Scanner
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from .core.constants import (
     APPLE_COMPANY_ID,
@@ -65,6 +66,15 @@ app = FastAPI(
     title="BLE Device Counter",
     description="A simple API to count BLE devices in proximity",
     version="1.0.0"
+)
+
+# Disable CORS policy (allow all)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Mount static files
