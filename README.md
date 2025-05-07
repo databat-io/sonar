@@ -5,7 +5,7 @@
 1. **Clone the repository:**
 
 ```bash
-git clone https://github.com/databat-io/sonar.git
+git clone https://github.com/viktopia/sonar.git
 cd sonar
 ```
 
