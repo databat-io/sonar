@@ -4,6 +4,7 @@ import logging
 import subprocess
 from collections import deque
 from datetime import datetime, timedelta
+from typing import Any
 
 from bluepy.btle import DefaultDelegate, Scanner
 from fastapi import FastAPI, HTTPException
@@ -31,20 +32,22 @@ logger = logging.getLogger(__name__)
 
 class ScanDelegate(DefaultDelegate):
     """Delegate for handling BLE scan events."""
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize the ScanDelegate."""
         DefaultDelegate.__init__(self)
 
 class BackgroundScanner:
     """Manages the background BLE scanning task."""
-    def __init__(self):
-        self.task = None
+    def __init__(self) -> None:
+        """Initialize the BackgroundScanner."""
+        self.task: asyncio.Task | None = None
 
-    async def start(self):
+    async def start(self) -> None:
         """Start the background scanning task."""
         if self.task is None or self.task.done():
             self.task = asyncio.create_task(background_scan())
 
-    async def stop(self):
+    async def stop(self) -> None:
         """Stop the background scanning task."""
         if self.task is not None and not self.task.done():
             self.task.cancel()
@@ -112,9 +115,13 @@ def check_system_requirements() -> tuple[bool, str]:
 
     return True, "System requirements met"
 
-def is_ios_device(device) -> bool:
+def is_ios_device(device: Any) -> bool:
     """
     Detects if a device is likely an iOS device based on advertising data patterns.
+    Args:
+        device: The BLE device object
+    Returns:
+        True if the device is likely an iOS device, False otherwise.
     """
     # Check for Apple-specific manufacturer data
     if device.getValue(MANUFACTURER_DATA_TYPE):
@@ -136,7 +143,7 @@ def is_ios_device(device) -> bool:
 
     return False
 
-def _get_service_components(device) -> list[str]:
+def _get_service_components(device: Any) -> list[str]:
     """Extract service information from device."""
     services = []
     if device.getValue(INCOMPLETE_16B_SERVICES):
@@ -148,7 +155,7 @@ def _get_service_components(device) -> list[str]:
         return [f"services:{services_str}"]
     return []
 
-def _get_name_components(device) -> list[str]:
+def _get_name_components(device: Any) -> list[str]:
     """Extract name information from device."""
     if device.getValue(COMPLETE_LOCAL_NAME):
         name = device.getValueText(COMPLETE_LOCAL_NAME)
@@ -160,7 +167,7 @@ def _get_name_components(device) -> list[str]:
             return [f"short_name:{name}"]
     return []
 
-def _get_manufacturer_components(device) -> list[str]:
+def _get_manufacturer_components(device: Any) -> list[str]:
     """Extract manufacturer information from device."""
     if device.getValue(MANUFACTURER_DATA_TYPE):
         manu_data = device.getValueText(MANUFACTURER_DATA_TYPE)
@@ -170,10 +177,14 @@ def _get_manufacturer_components(device) -> list[str]:
             return [f"manu:{manu_data[:4]}"]
     return []
 
-def build_device_fingerprint(device) -> str:
+def build_device_fingerprint(device: Any) -> str:
     """
     Creates a fingerprint for a BLE device based on its advertising data.
     Handles MAC randomization by focusing on stable device identifiers and platform-specific patterns.
+    Args:
+        device: The BLE device object
+    Returns:
+        A SHA-256 hash string representing the device fingerprint.
     """
     fingerprint_components = []
 
@@ -215,9 +226,13 @@ def build_device_fingerprint(device) -> str:
     fingerprint = '|'.join(sorted(fingerprint_components))
     return hashlib.sha256(fingerprint.encode()).hexdigest()
 
-def calculate_metrics(time_window: timedelta) -> dict:
+def calculate_metrics(time_window: timedelta) -> dict[str, Any]:
     """
     Calculate metrics for a given time window.
+    Args:
+        time_window: The time window as a timedelta object.
+    Returns:
+        A dictionary with calculated metrics.
     """
     now = datetime.now()
     window_start = now - time_window
@@ -269,7 +284,7 @@ def calculate_metrics(time_window: timedelta) -> dict:
         "manufacturer_stats": manufacturer_stats
     }
 
-def setup_bluetooth():
+def setup_bluetooth() -> None:
     """Set up Bluetooth adapter for scanning."""
     try:
         # Reset the Bluetooth adapter
@@ -293,7 +308,7 @@ def setup_bluetooth():
             detail=f"Failed to set up Bluetooth adapter: {e!s}"
         ) from e
 
-async def background_scan():
+async def background_scan() -> None:
     """Background task that runs BLE scans periodically."""
     while True:
         try:
@@ -351,21 +366,20 @@ async def background_scan():
         await asyncio.sleep(SCAN_INTERVAL_SECONDS)
 
 @app.on_event("startup")
-async def startup_event():
+async def startup_event() -> None:
     """Start background scanning task on startup."""
     await scanner.start()
 
 @app.on_event("shutdown")
-async def shutdown_event():
+async def shutdown_event() -> None:
     """Stop background scanning task on shutdown."""
     await scanner.stop()
 
 @app.get("/latest")
-async def get_latest_scan() -> dict:
+async def get_latest_scan() -> dict[str, Any]:
     """
     Return the most recent scan results and historical statistics.
     This endpoint does not trigger a new scan - it returns data from the background scanning task.
-
     Returns:
         Dictionary containing:
         - current_scan: Most recent scan results
@@ -414,9 +428,11 @@ async def get_latest_scan() -> dict:
         ) from e
 
 @app.get("/health")
-async def health_check() -> dict:
+async def health_check() -> dict[str, str]:
     """
     Simple health check endpoint that also verifies system requirements.
+    Returns:
+        A dictionary with health status and message.
     """
     success, message = check_system_requirements()
     return {
@@ -425,13 +441,11 @@ async def health_check() -> dict:
     }
 
 @app.get("/time-series")
-async def get_time_series(interval_minutes: int = 60) -> dict:
+async def get_time_series(interval_minutes: int = 60) -> dict[str, Any]:
     """
     Get time series data for the last 24 hours, suitable for generating bar charts.
-
     Args:
         interval_minutes: Time interval between data points in minutes (default: 60)
-
     Returns:
         Dictionary containing time series data for the last 24 hours
     """

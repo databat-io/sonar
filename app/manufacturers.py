@@ -3,6 +3,8 @@ Manufacturer database and lookup functions.
 Based on Nordic Semiconductor's company ID database.
 """
 
+from typing import Any
+
 # Constants
 MANUFACTURER_DATA_TYPE = 255  # Manufacturer Specific Data
 MIN_MANUFACTURER_DATA_LENGTH = 4  # Minimum length for valid manufacturer data
@@ -246,7 +248,7 @@ def lookup_manufacturer(manufacturer_id: int) -> str:
     """
     return MANUFACTURER_DB.get(manufacturer_id, "Unknown")
 
-def get_manufacturer_from_device(device) -> str:
+def get_manufacturer_from_device(device: Any) -> str:
     """
     Extract and look up the manufacturer from a BLE device.
 

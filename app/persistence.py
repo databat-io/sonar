@@ -19,7 +19,7 @@ class ScanResult:
     manufacturer_stats: dict[str, int]
 
 class DataPersistence:
-    def __init__(self, data_dir: str = "/data"):
+    def __init__(self, data_dir: str = "/data") -> None:
         """
         Initialize data persistence with a storage directory.
 
